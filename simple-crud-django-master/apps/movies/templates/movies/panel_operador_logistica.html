@@ -1,0 +1,34 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div class="netflix-wrapper">
+    <div class="netflix-card" style="max-width: 650px;">
+        
+        <!-- Título principal dentro de la tarjeta -->
+        <h2>Panel de Operador de Logística</h2>
+        
+        <!-- Subtítulo / Mensaje de bienvenida -->
+        <p style="color: #b3b3b3; margin-bottom: 25px; font-size: 0.95rem;">
+            Bienvenido, alonso. Ejecución de retiros y envíos según la planificación.
+        </p>
+
+        <!-- Línea divisoria estilo Netflix -->
+        <hr style="border: none; border-top: 1px solid #333; margin-bottom: 25px;">
+
+        <!-- Sección de Acciones -->
+        <div style="margin-bottom: 20px;">
+            <h4 style="color: #ffffff; font-size: 1.1rem; font-weight: 600; margin-bottom: 15px;">
+                Acciones de Operación
+            </h4>
+            
+            <!-- Tu botón o tarjeta de acción -->
+            <div style="margin-bottom: 15px;">
+                <a href="{% url 'movies:ejecutar_retiros_envios' %}" class="btn" style="background-color: #222; border: 1px solid #444; color: #fff; display: inline-flex; align-items: center; padding: 12px 20px; border-radius: 4px; text-decoration: none;">
+                    🚚 Ejecutar Retiros y Envíos
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

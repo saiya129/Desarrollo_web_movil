@@ -1,0 +1,50 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div class="netflix-wrapper" style="max-width: 900px;">
+    <div class="netflix-card" style="width: 100%; max-width: none;">
+        
+        <h2 style="color: #e50914; margin-bottom: 10px;">Panel Base de Datos</h2>
+        <p style="color: #b3b3b3; margin-bottom: 25px; font-size: 0.95rem;">
+            Listado general y administración de todos los registros del sistema de logística inversa.
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #333; margin-bottom: 25px;">
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; color: #fff;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #333; color: #b3b3b3; font-size: 0.85rem;">
+                        <th style="padding: 10px;">ID</th>
+                        <th style="padding: 10px;">Producto</th>
+                        <th style="padding: 10px;">Motivo</th>
+                        <th style="padding: 10px;">Estado</th>
+                        <th style="padding: 10px;">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in solicitudes %}
+                        <tr style="border-bottom: 1px solid #222; font-size: 0.9rem;">
+                            <td style="padding: 12px;">{{ item.id }}</td>
+                            <td style="padding: 12px;">{{ item.producto }}</td>
+                            <td style="padding: 12px; color: #b3b3b3;">{{ item.motivo }}</td>
+                            <td style="padding: 12px;"><span style="color: #00ffcc; font-weight: bold;">{{ item.estado }}</span></td>
+                            <td style="padding: 12px; color: #b3b3b3;">{{ item.fecha_creacion }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #b3b3b3; padding: 20px;">No hay registros en la base de datos.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botón Volver -->
+        <div style="margin-top: 25px;">
+            <a href="{% url 'movies:panel-administrador' %}" style="background-color: #333; color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 4px; display: inline-block; font-size: 0.85rem;">← Volver al Panel de Administrador</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

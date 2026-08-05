@@ -1,0 +1,127 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div class="netflix-wrapper" style="background: #141414; min-height: 85vh; display: flex; justify-content: center; align-items: center; padding: 40px 20px;">
+<div class="netflix-card" style="background: rgba(20, 20, 20, 0.95); border: 1px solid #333; border-radius: 8px; padding: 40px; width: 100%; max-width: 750px;">
+
+    <h2 style="color: #e50914; font-weight: 700; font-size: 26px; margin-bottom: 8px; text-transform: uppercase; text-align: center;">Validación de Evidencia</h2>
+    <p style="color: #b3b3b3; font-size: 14px; margin-bottom: 30px; text-align: center;">Sección para revisar y validar la información basada en la evidencia adjunta.</p>
+
+    {% if solicitudes %}
+        <div style="margin-bottom: 30px;">
+            {% for sol in solicitudes %}
+                <div style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 20px; margin-bottom: 15px;">
+                    <p style="color: #fff; margin-bottom: 8px;"><strong>Producto:</strong> {{ sol.producto }}</p>
+                    <p style="color: #b3b3b3; margin-bottom: 8px; font-size: 14px;"><strong>Motivo:</strong> {{ sol.motivo }}</p>
+                    <p style="color: #b3b3b3; margin-bottom: 8px; font-size: 14px;"><strong>Fecha:</strong> {{ sol.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    
+                    {% if sol.evidencia %}
+                        <div style="margin: 12px 0; padding: 10px; background: #1a1a1a; border-radius: 4px; border: 1px dashed #444;">
+                            <button type="button" onclick="abrirModal('{{ sol.evidencia.url }}')" style="background: #0066cc; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                                🔍 Ver archivo adjunto
+                            </button>
+                        </div>
+                    {% else %}
+                        <p style="margin: 10px 0; font-size: 13px; color: #777;"><em>Sin archivo adjunto</em></p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 30px 0; color: #888; font-size: 15px;">
+            No hay solicitudes con evidencia pendiente por validar.
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 30px; border-top: 1px solid #2a2a2a; padding-top: 20px; display: flex; justify-content: center;">
+        <a href="{% url 'movies:panel-postventa' %}" style="display: inline-block; background-color: #222; border: 1px solid #555; padding: 12px 25px; font-weight: bold; border-radius: 4px; color: #fff; text-decoration: none;">
+            ← Volver al Panel
+        </a>
+    </div>
+
+</div>
+</div>
+
+<div id="modalEvidencia" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #1f1f1f; border: 1px solid #444; border-radius: 8px; width: 85%; max-width: 800px; height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 5px 25px rgba(0,0,0,0.9);">
+        
+        <div style="padding: 15px 20px; background: #141414; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333;">
+            <h3 style="color: #fff; font-size: 16px; margin: 0;">Visualización de Evidencia</h3>
+            <div>
+                <a id="btnDescargar" href="" target="_blank" style="background: #0066cc; color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 4px; font-size: 13px; margin-right: 8px; font-weight: bold;">Descargar / Abrir Archivo 📥</a>
+                <button onclick="cerrarModal()" style="background: #e50914; color: #fff; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold; cursor: pointer;">Cerrar ✕</button>
+            </div>
+        </div>
+        
+        <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: auto; background: #000; position: relative; padding: 10px;">
+            <img id="imagenEvidencia" src="" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;" alt="Evidencia">
+            <div id="textoEvidenciaContainer" style="display: none; width: 100%; height: 100%; background: #141414; color: #fff; padding: 20px; overflow: auto; font-family: monospace; white-space: pre-wrap; font-size: 14px; text-align: left;"></div>
+            <iframe id="iframeEvidencia" src="" style="width: 100%; height: 100%; border: none; background: #fff; display: none;" title="Documento"></iframe>
+            <div id="fallbackContainer" style="display: none; text-align: center; color: #fff; padding: 30px;">
+                <p style="font-size: 18px; margin-bottom: 15px;">Este tipo de archivo no se puede previsualizar directamente en el navegador.</p>
+                <p style="color: #aaa; font-size: 14px; margin-bottom: 20px;">Utiliza el botón superior de "Descargar / Abrir Archivo" para visualizarlo en tu equipo.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function abrirModal(url) {
+        const modal = document.getElementById('modalEvidencia');
+        const img = document.getElementById('imagenEvidencia');
+        const iframe = document.getElementById('iframeEvidencia');
+        const txtContainer = document.getElementById('textoEvidenciaContainer');
+        const fallbackContainer = document.getElementById('fallbackContainer');
+        const btnDescargar = document.getElementById('btnDescargar');
+
+        btnDescargar.href = url;
+
+        img.style.display = 'none';
+        iframe.style.display = 'none';
+        txtContainer.style.display = 'none';
+        fallbackContainer.style.display = 'none';
+
+        const esImagen = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
+        const esTexto = /\.txt$/i.test(url);
+        const esPdf = /\.pdf$/i.test(url);
+
+        if (esImagen) {
+            img.src = url;
+            img.style.display = 'block';
+            modal.style.display = 'flex';
+        } else if (esTexto) {
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    txtContainer.innerText = data;
+                    txtContainer.style.display = 'block';
+                    modal.style.display = 'flex';
+                })
+                .catch(error => {
+                    iframe.src = url;
+                    iframe.style.display = 'block';
+                    modal.style.display = 'flex';
+                });
+        } else if (esPdf) {
+            iframe.src = url;
+            iframe.style.display = 'block';
+            modal.style.display = 'flex';
+        } else {
+            fallbackContainer.style.display = 'block';
+            modal.style.display = 'flex';
+        }
+    }
+
+    function cerrarModal() {
+        const modal = document.getElementById('modalEvidencia');
+        const img = document.getElementById('imagenEvidencia');
+        const iframe = document.getElementById('iframeEvidencia');
+        const txtContainer = document.getElementById('textoEvidenciaContainer');
+
+        modal.style.display = 'none';
+        img.src = '';
+        iframe.src = '';
+        txtContainer.innerText = '';
+    }
+</script>
+{% endblock %}

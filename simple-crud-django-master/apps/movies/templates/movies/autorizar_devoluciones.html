@@ -1,0 +1,56 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div class="netflix-wrapper" style="background: #141414; min-height: 85vh; display: flex; justify-content: center; align-items: center; padding: 40px 20px;">
+<div class="netflix-card" style="background: rgba(20, 20, 20, 0.95); border: 1px solid #333; border-radius: 8px; padding: 40px; width: 100%; max-width: 800px;">
+
+    <!-- Título principal -->
+    <h2 style="color: #e50914; font-weight: 700; font-size: 26px; margin-bottom: 8px; text-transform: uppercase; text-align: center;">Autorizar Devoluciones o Cambios</h2>
+    <p style="color: #b3b3b3; font-size: 14px; margin-bottom: 30px; text-align: center;">Gestión final para aprobar o rechazar devoluciones y cambios de productos.</p>
+
+    <!-- Listado de solicitudes pendientes de autorización -->
+    {% if solicitudes %}
+        <div style="margin-bottom: 30px;">
+            {% for sol in solicitudes %}
+                <div style="background: #222; border: 1px solid #444; border-radius: 6px; padding: 20px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px;">
+                    <div>
+                        <p style="color: #fff; margin-bottom: 5px;"><strong>Producto:</strong> {{ sol.producto }}</p>
+                        <p style="color: #b3b3b3; font-size: 14px; margin-bottom: 5px;"><strong>Motivo:</strong> {{ sol.motivo }}</p>
+                        <p style="color: #b3b3b3; font-size: 14px; margin-bottom: 5px;"><strong>Fecha:</strong> {{ sol.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+
+                    <!-- Botones de Acción (Aprobar / Rechazar) -->
+                    <div style="display: flex; gap: 10px; margin-top: 10px; border-top: 1px solid #333; padding-top: 15px;">
+                        <form action="{% url 'movies:aprobar-devolucion' sol.id %}" method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background-color: #2ecc71; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                                ✓ Aprobar
+                            </button>
+                        </form>
+
+                        <form action="{% url 'movies:rechazar-devolucion' sol.id %}" method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background-color: #e50914; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                                ✕ Rechazar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 30px 0; color: #888; font-size: 15px;">
+            No hay devoluciones o cambios pendientes de autorización.
+        </div>
+    {% endif %}
+
+    <!-- Botón de retorno al panel -->
+    <div style="margin-top: 30px; border-top: 1px solid #2a2a2a; padding-top: 20px; display: flex; justify-content: center;">
+        <a href="{% url 'movies:panel-postventa' %}" style="display: inline-block; background-color: #222; border: 1px solid #555; padding: 12px 25px; font-weight: bold; border-radius: 4px; color: #fff; text-decoration: none;">
+            ← Volver al Panel
+        </a>
+    </div>
+
+</div>
+</div>
+{% endblock %}

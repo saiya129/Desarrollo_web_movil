@@ -1,0 +1,26 @@
+{% load widget_tweaks %}
+
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="row">
+            {% if field.errors %}
+                <div class="red-text">
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+            
+            <div class="input-field col s12">
+                {% render_field field class="validate" %}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        <button class="btn waves-effect waves-light right red darken-1" type="submit" name="action">
+            Entrar
+            <i class="material-icons right">send</i>
+        </button>
+    </div>
+</form>

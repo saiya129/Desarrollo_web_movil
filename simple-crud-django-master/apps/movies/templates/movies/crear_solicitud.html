@@ -1,0 +1,46 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div class="netflix-wrapper" style="background: #141414; min-height: 85vh; display: flex; justify-content: center; align-items: center; padding: 40px 20px;">
+<div class="netflix-card" style="background: rgba(20, 20, 20, 0.95); border: 1px solid #333; border-radius: 8px; padding: 40px 40px; width: 100%; max-width: 650px;">
+
+    <h2 style="color: #e50914; font-weight: 700; font-size: 26px; margin-bottom: 8px; text-transform: uppercase; text-align: center;">Nueva Solicitud de Devolución</h2>
+    <p style="color: #b3b3b3; font-size: 14px; margin-bottom: 30px; text-align: center;">Ingresa los datos del producto y adjunta la evidencia para iniciar tu proceso</p>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Producto (Texto Libre) -->
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; color: #fff; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Nombre o Código del Producto</label>
+            <input type="text" name="producto" required placeholder="Ej: SKU-12345 o Nombre del Artículo" style="width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
+        </div>
+
+        <!-- Motivo -->
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; color: #fff; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Motivo de la Devolución</label>
+            <textarea name="motivo" required placeholder="Describe brevemente el motivo..." style="width: 100%; background: #222; border: 1px solid #444; border-radius: 4px; padding: 10px; color: #fff; height: 90px;"></textarea>
+        </div>
+
+        <!-- Evidencia -->
+        <div style="margin-bottom: 30px;">
+            <label style="display: block; color: #fff; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Evidencia (Imagen o archivo)</label>
+            <input type="file" name="evidencia" required style="width: 100%; background: #222; border: 1px solid #444; border-radius: 4px; padding: 10px; color: #fff;">
+        </div>
+
+        <!-- Botón Enviar -->
+        <button type="submit" style="width: 100%; background-color: #e50914; padding: 15px; font-weight: bold; border-radius: 4px; font-size: 15px; text-transform: uppercase; color: #fff; border: none; cursor: pointer;">
+            Enviar Solicitud
+        </button>
+    </form>
+
+    <!-- Botón Volver -->
+    <div style="margin-top: 20px; border-top: 1px solid #2a2a2a; padding-top: 20px; text-align: center;">
+        <a href="{% url 'movies:panel-cliente' %}" style="display: block; width: 100%; background-color: #222; border: 1px solid #555; padding: 12px; font-weight: bold; border-radius: 4px; color: #fff; text-decoration: none;">
+            ← Volver al Panel de Cliente
+        </a>
+    </div>
+
+</div>
+</div>
+{% endblock %}

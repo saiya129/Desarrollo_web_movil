@@ -1,0 +1,51 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div class="netflix-wrapper" style="max-width: 900px; padding: 40px 20px;">
+    <div class="netflix-card" style="width: 100%; max-width: none; background-color: #141414; border: 1px solid #333; padding: 30px; border-radius: 8px;">
+        
+        <h2 style="color: #e50914; margin-bottom: 10px; font-size: 2rem;">Reportes e Indicadores del Sistema</h2>
+        <p style="color: #b3b3b3; margin-bottom: 25px; font-size: 0.95rem;">
+            Sección destinada a la supervisión de métricas y el monitoreo del desempeño del proceso.
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #333; margin-bottom: 30px;">
+
+        <!-- Tarjetas de Indicadores en Fila -->
+        <div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
+            
+            <div style="background-color: #1f1f1f; border: 1px solid #333; padding: 25px; border-radius: 6px; flex: 1; min-width: 220px; text-align: center;">
+                <p style="color: #b3b3b3; font-size: 0.9rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Total Solicitudes</p>
+                <h3 style="color: #fff; font-size: 2.5rem; margin: 0; font-weight: bold;">{{ total_solicitudes|default:"0" }}</h3>
+            </div>
+
+            <div style="background-color: #1f1f1f; border: 1px solid #333; padding: 25px; border-radius: 6px; flex: 1; min-width: 220px; text-align: center;">
+                <p style="color: #b3b3b3; font-size: 0.9rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Completadas</p>
+                <h3 style="color: #00ffcc; font-size: 2.5rem; margin: 0; font-weight: bold;">{{ completadas|default:"0" }}</h3>
+            </div>
+
+            <div style="background-color: #1f1f1f; border: 1px solid #333; padding: 25px; border-radius: 6px; flex: 1; min-width: 220px; text-align: center;">
+                <p style="color: #b3b3b3; font-size: 0.9rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Pendientes / En Proceso</p>
+                <h3 style="color: #ffaa00; font-size: 2.5rem; margin: 0; font-weight: bold;">{{ pendientes|default:"0" }}</h3>
+            </div>
+
+        </div>
+
+        <!-- Botones de Acción (Volver a la izquierda, Descargar a la derecha) -->
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            
+            <!-- Botón Volver (A la izquierda) -->
+            <a href="{% url 'movies:panel-administrador' %}" style="background-color: #333; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 4px; display: inline-block; font-size: 0.9rem; font-weight: bold;">
+                ← Volver al Panel de Administrador
+            </a>
+
+            <!-- Botón de Descarga (A la derecha) -->
+            <a href="{% url 'movies:descargar-reporte' %}" style="background-color: #e50914; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 4px; display: inline-block; font-size: 0.9rem; font-weight: bold;">
+                📥 Descargar Reporte
+            </a>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

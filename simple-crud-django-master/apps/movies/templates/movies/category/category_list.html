@@ -1,0 +1,37 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div class="row">
+    <div class="col s12">
+        {% if not categories %}
+            <!-- Alerta estilizada al estilo Netflix -->
+            <div class="alert-netflix-empty">
+                <i class="material-icons">info_outline</i>
+                <span>No hay registros actualmente.</span>
+            </div>
+        {% else %}
+            <!-- Tabla estilizada en modo oscuro -->
+            <table class="netflix-table">
+                <thead>
+                    <tr>
+                        <th width="20%">Nombre</th>
+                        <th>Edad mínima</th>
+                        <th>Creación</th>
+                        <th>Última actualización</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category_item in categories %}
+                        <tr>
+                            <td width="20%">{{ category_item.name }}</td>
+                            <td>{{ category_item.minimum_age }}</td>
+                            <td>{{ category_item.created | timesince }}</td>
+                            <td>{{ category_item.updated | timesince }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

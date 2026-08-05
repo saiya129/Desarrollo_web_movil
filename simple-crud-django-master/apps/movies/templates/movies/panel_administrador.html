@@ -1,0 +1,32 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div class="netflix-wrapper">
+    <div class="netflix-card" style="max-width: 650px;">
+        
+        <h2 style="color: #fff; margin-bottom: 5px; font-size: 1.8rem;">Panel de Administrador</h2>
+        <p style="color: #b3b3b3; margin-bottom: 25px; font-size: 0.95rem;">
+            Bienvenido, {{ request.user.username }}. Control general del sistema y reportes.
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #333; margin-bottom: 25px;">
+
+        <h4 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem;">Acciones de Operación</h4>
+
+        <!-- Botón a Reportes -->
+        <div style="margin-bottom: 12px;">
+            <a href="{% url 'movies:reportes' %}" style="background-color: #1f1f1f; border: 1px solid #333; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 4px; display: block; font-size: 0.95rem; font-weight: bold;">
+                📊 REPORTES DEL SISTEMA
+            </a>
+        </div>
+
+        <!-- Botón a Base de Datos -->
+        <div>
+            <a href="{% url 'movies:panel-base-datos' %}" style="background-color: #1f1f1f; border: 1px solid #333; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 4px; display: block; font-size: 0.95rem; font-weight: bold;">
+                🗄️ PANEL BASE DE DATOS
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

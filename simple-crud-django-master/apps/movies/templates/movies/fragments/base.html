@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dailymovie</title>
+  <!-- Import Google Icon Font -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Bebas Neue (Fuente estilo Netflix) -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+
+  <style>
+    body {
+      background-color: #141414 !important;
+      color: #ffffff !important;
+    }
+
+    /* Caja de alerta vacía estilizada (modo oscuro Netflix) */
+    .alert-netflix-empty {
+      background: rgba(30, 30, 30, 0.85) !important;
+      border-left: 5px solid #E50914 !important;
+      color: #ffffff !important;
+      padding: 18px 24px !important;
+      border-radius: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+      margin-top: 20px !important;
+      width: 100% !important;
+    }
+
+    .alert-netflix-empty i {
+      color: #E50914 !important;
+      font-size: 24px !important;
+    }
+
+    /* Animación de entrada cinemática para el contenido */
+    .section {
+      animation: cinematicEnter 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity, filter;
+    }
+
+    @keyframes cinematicEnter {
+      0% {
+        opacity: 0;
+        transform: scale(1.05) translateY(12px);
+        filter: blur(8px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    /* Estilo para la salida progresiva del Login */
+    body.cinematic-exit, .netflix-card.cinematic-exit {
+      opacity: 0 !important;
+      transform: scale(0.95) translateY(-10px) !important;
+      filter: blur(10px) !important;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    /* 1. Navbar oscuro fijo */
+    nav.netflix-nav {
+      background-color: #000000 !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8) !important;
+      height: 64px !important;
+      line-height: 64px !important;
+    }
+
+    /* 2. Contenedor flexible principal */
+    .netflix-header-container {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      height: 100% !important;
+      width: 85% !important;
+      max-width: 1200px !important;
+      margin: 0 auto !important;
+    }
+
+    /* 3. Logo DAILYMOVIE */
+    .brand-logo-netflix {
+      font-family: 'Bebas Neue', cursive, sans-serif !important;
+      color: #E50914 !important;
+      font-size: 2.2rem !important;
+      letter-spacing: 1.5px !important;
+      text-decoration: none !important;
+      display: flex !important;
+      align-items: center !important;
+      height: 100% !important;
+    }
+
+    /* 4. Buscador estilizado */
+    .search-box-netflix {
+      display: flex !important;
+      align-items: center !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-radius: 20px !important;
+      padding: 0 14px !important;
+      height: 36px !important;
+      width: 300px !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      transition: all 0.3s ease !important;
+    }
+
+    .search-box-netflix:focus-within {
+      background: rgba(0, 0, 0, 0.85) !important;
+      border-color: #E50914 !important;
+      box-shadow: 0 0 10px rgba(229, 9, 20, 0.5) !important;
+      width: 360px !important;
+    }
+
+    .search-box-netflix i {
+      color: #aaaaaa !important;
+      font-size: 20px !important;
+      margin-right: 8px !important;
+      user-select: none !important;
+    }
+
+    .search-box-netflix input {
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      color: #ffffff !important;
+      height: 100% !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      font-size: 0.9rem !important;
+    }
+
+    .search-box-netflix input::placeholder {
+      color: #888888 !important;
+    }
+
+    /* 5. Menú de navegación derecho */
+    .netflix-menu-links {
+      display: flex !important;
+      list-style: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 100% !important;
+      align-items: center !important;
+    }
+
+    .netflix-menu-links li {
+      margin-left: 20px !important;
+    }
+
+    .netflix-menu-links li a {
+      color: #e5e5e5 !important;
+      font-weight: 500 !important;
+      font-size: 0.95rem !important;
+      text-decoration: none !important;
+      transition: color 0.3s ease !important;
+      padding: 0 5px !important;
+    }
+
+    .netflix-menu-links li a:hover {
+      color: #E50914 !important;
+      background: transparent !important;
+    }
+
+    .errorlist {
+      color: #F44336 !important;
+    }
+    /* --- Ajuste del botón y su efecto --- */
+/* --- Botón Cerrar Sesión Compacto y con Efecto --- */
+.btn-netflix-logout {
+    background-color: #E50914 !important;
+    color: #ffffff !important;
+    padding: 6px 14px !important;
+    border-radius: 4px !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    line-height: normal !important;
+    text-transform: uppercase !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    height: auto !important;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.btn-netflix-logout:hover {
+    background-color: #f6121d !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4) !important;
+}
+/* --- Centrar contenedor principal y tarjetas --- */
+        .container.section, .container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+        }
+
+        .container.section > div, .card {
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+  </style>
+</head>
+<body>
+
+<!-- Barra de Navegación Fija -->
+<!-- Barra de Navegación Fija -->
+<nav class="netflix-nav">
+    <div class="netflix-header-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 20px; position: relative;">
+        
+        <!-- Elemento invisible izquierdo que equilibra el espacio (ancho 140px) -->
+        <div style="width: 140px; visibility: hidden;">Cerrar Sesión</div>
+
+        <!-- Título Estrictamente al Centro -->
+        <div style="position: absolute; left: 50%; transform: translateX(-50%); text-align: center;">
+            <a href="javascript:window.location.reload();" class="brand-logo-netflix" style="margin: 0; display: inline-block; cursor: pointer;">LOGISTICA INVERSA</a>
+        </div>
+
+        <!-- Botón de Cerrar Sesión a la Derecha (ancho 140px) -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; width: 140px;">
+            <a href="{% url 'movies:log-out' %}" class="btn-netflix-logout">
+                Cerrar Sesión
+            </a>
+        </div>
+
+    </div>
+</nav>
+  <!-- Contenido Dinámico de Django -->
+  <div class="container section">
+    {% block main-content %}
+    {% endblock %}
+  </div>
+
+  <!-- Materialize JavaScript -->
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.css"></script>
+</body>
+</html>

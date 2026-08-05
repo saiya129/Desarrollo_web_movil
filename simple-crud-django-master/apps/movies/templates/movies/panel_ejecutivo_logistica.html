@@ -1,0 +1,41 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div class="netflix-wrapper">
+    <div class="netflix-card" style="max-width: 650px;">
+        
+        <!-- Título principal dentro de la tarjeta -->
+        <h2>Panel de Ejecutivo de Logística</h2>
+        
+        <!-- Mensaje de bienvenida / subtítulo -->
+        <p style="color: #b3b3b3; margin-bottom: 25px; font-size: 0.95rem;">
+            Bienvenido, {{ request.user.username }}. Coordinación y gestión de la operación.
+        </p>
+
+        <!-- Línea divisoria estilo Netflix -->
+        <hr style="border: none; border-top: 1px solid #333; margin-bottom: 25px;">
+
+        <!-- Sección de Acciones del Ejecutivo -->
+        <div style="margin-bottom: 20px;">
+            <h4 style="color: #ffffff; font-size: 1.1rem; font-weight: 600; margin-bottom: 15px;">
+                Acciones de Operación
+            </h4>
+            
+            <!-- Botón 1: Coordinar Retiros -->
+            <div style="margin-bottom: 12px;">
+                <a href="{% url 'movies:coordinar_retiros' %}" class="btn" style="background-color: #222; border: 1px solid #444; color: #fff; display: inline-flex; align-items: center; padding: 12px 20px; border-radius: 4px; text-decoration: none; width: 100%; box-sizing: border-box;">
+                    📦 Coordinar Retiros
+                </a>
+            </div>
+
+            <!-- Botón 2: Generar Etiqueta -->
+            <div style="margin-bottom: 15px;">
+                <a href="{% url 'movies:generar_etiqueta' %}" class="btn" style="background-color: #222; border: 1px solid #444; color: #fff; display: inline-flex; align-items: center; padding: 12px 20px; border-radius: 4px; text-decoration: none; width: 100%; box-sizing: border-box;">
+                    🏷️ Generar Etiqueta
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

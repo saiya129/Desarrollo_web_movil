@@ -1,0 +1,158 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<style>
+  /* 1. Fondo oscuro para el cuerpo del dashboard */
+  body {
+    background-color: #141414 !important;
+    color: #ffffff !important;
+  }
+/* Forzar barra negra y sombras en el nav */
+nav, 
+.nav-wrapper, 
+div.nav-wrapper {
+  background-color: #000000 !important;
+  background: #000000 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Cambiar los enlaces (Películas, Categorías, Salir) */
+nav ul li a, 
+.nav-wrapper ul li a {
+  color: #e5e5e5 !important;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+nav ul li a:hover, 
+.nav-wrapper ul li a:hover {
+  color: #E50914 !important;
+  background-color: transparent !important;
+}
+
+/* Forzar el color del título en el nav */
+nav .brand-logo, 
+.nav-wrapper .brand-logo {
+  color: #E50914 !important;
+  font-family: 'Bebas Neue', cursive, sans-serif !important;
+  letter-spacing: 1px;
+}
+
+  /* 2. Animación e impacto para el Botón Agregar Nuevo */
+  .btn-netflix-add {
+    background-color: #E50914 !important;
+    color: #ffffff !important;
+    font-weight: bold;
+    border-radius: 6px;
+    padding: 0 24px;
+    height: 45px;
+    line-height: 45px;
+    box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                box-shadow 0.3s ease !important;
+    animation: pulseGlow 2.5s infinite;
+  }
+
+  .btn-netflix-add:hover {
+    background-color: #f40612 !important;
+    transform: scale(1.06);
+    box-shadow: 0 6px 22px rgba(229, 9, 20, 0.7);
+  }
+
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.6); }
+    70% { box-shadow: 0 0 0 12px rgba(229, 9, 20, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); }
+  }
+
+  /* 3. Alerta elegante cuando no hay películas */
+  .alert-netflix-empty {
+    background: rgba(30, 30, 30, 0.85) !important;
+    border-left: 5px solid #E50914;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+    color: #e5e5e5;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  /* 4. Estilos oscuros para la tabla cuando SÍ hay registros */
+  table.striped-netflix {
+    background-color: #1f1f1f;
+    border-radius: 8px;
+    overflow: hidden;
+    color: #ffffff;
+  }
+
+  table.striped-netflix th {
+    background-color: #000000;
+    color: #E50914;
+    font-size: 1.1rem;
+  }
+
+  table.striped-netflix td {
+    border-bottom: 1px solid #333;
+    color: #e5e5e5;
+  }
+</style>
+
+<div class="container" style="padding-top: 30px; padding-bottom: 50px;">
+  
+  <!-- Fila del Botón "Agregar Nuevo" -->
+  <div class="row">
+    <div class="col s12">
+      <a class="waves-effect waves-light btn right btn-netflix-add" href="{% url 'movies:movies-create' %}">
+        <i class="material-icons left">add</i>Agregar nuevo
+      </a>
+    </div>
+  </div>
+
+  <!-- Fila del Contenido (Tabla o Mensaje) -->
+  <div class="row">
+    <div class="col s12">
+      {% if not movies %}
+        <!-- Alerta estilo Netflix cuando está vacío -->
+        <div class="alert-netflix-empty">
+          <span class="white-text font-weight-bold" style="font-size: 1.1rem; display: flex; align-items: center;">
+            <i class="material-icons left" style="color: #E50914; margin-right: 10px;">info_outline</i>
+            No hay registros actualmente.
+          </span>
+        </div>
+      {% else %}
+        <!-- Tabla de películas en modo oscuro -->
+        <table class="striped centered striped-netflix">
+          <thead>
+            <tr>
+              <th width="20%">Nombre</th>
+              <th>Descripción</th>
+              <th>Fecha de lanzamiento</th>
+              <th width="20%">Opciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for movie in movies %}
+              <tr>
+                <td width="20%">{{ movie.name }}</td>
+                <td>{{ movie.description | truncatechars:120 }}</td>
+                <td>{{ movie.release_date }}</td>
+                <td width="20%">
+                  <a class="btn-floating btn-small waves-effect waves-light red" href="{{ movie.get_edit_url }}">
+                    <i class="material-icons">edit</i>
+                  </a>
+                  <a class="btn-floating btn-small waves-effect waves-light blue" href="{{ movie.get_delete_url }}">
+                    <i class="material-icons">delete</i>
+                  </a>
+                  <a class="btn-floating btn-small waves-effect waves-light green" href="{{ movie.get_detail_url }}">
+                    <i class="material-icons">visibility</i>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
