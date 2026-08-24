@@ -1,244 +1,146 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Dailymovie</title>
-  <!-- Import Google Icon Font -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <!-- Bebas Neue (Fuente estilo Netflix) -->
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
-  <!-- Compiled and minified CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
-  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Twolife</title>
+    <style>
+        body { margin: 0; background: #141414; font-family: sans-serif; color: #fff; }
+        
+        /* Barra Superior Global */
+        .global-header { background: #000; border-bottom: 1px solid #222; padding: 15px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+        
+        /* Espaciador izquierdo para equilibrar el grid y centrar el título exacto */
+        .global-header-left { display: flex; align-items: center; }
+        
+        /* Título Centrado */
+        .global-logo { color: #e50914; font-weight: 900; font-size: 22px; text-decoration: none; letter-spacing: 1px; text-transform: uppercase; justify-self: center; }
+        
+        /* Acciones de la derecha (Campana y Círculo de Perfil) */
+        .global-actions { display: flex; align-items: center; gap: 15px; position: relative; justify-self: end; }
+        
+        .icon-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; font-size: 16px; transition: background 0.2s; box-sizing: border-box; }
+        .icon-btn:hover { background: #2a2a2a; }
+        .badge { position: absolute; top: -5px; right: -5px; background: #e50914; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
+        
+        /* Botón de Círculo con la Inicial del Usuario */
+        .avatar-btn { background: #2ecc71; color: #000; font-weight: bold; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; font-size: 16px; text-transform: uppercase; transition: transform 0.2s; }
+        .avatar-btn:hover { transform: scale(1.05); }
 
-  <style>
-    body {
-      background-color: #141414 !important;
-      color: #ffffff !important;
-    }
-
-    /* Caja de alerta vacía estilizada (modo oscuro Netflix) */
-    .alert-netflix-empty {
-      background: rgba(30, 30, 30, 0.85) !important;
-      border-left: 5px solid #E50914 !important;
-      color: #ffffff !important;
-      padding: 18px 24px !important;
-      border-radius: 8px !important;
-      display: flex !important;
-      align-items: center !important;
-      gap: 12px !important;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
-      margin-top: 20px !important;
-      width: 100% !important;
-    }
-
-    .alert-netflix-empty i {
-      color: #E50914 !important;
-      font-size: 24px !important;
-    }
-
-    /* Animación de entrada cinemática para el contenido */
-    .section {
-      animation: cinematicEnter 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      will-change: transform, opacity, filter;
-    }
-
-    @keyframes cinematicEnter {
-      0% {
-        opacity: 0;
-        transform: scale(1.05) translateY(12px);
-        filter: blur(8px);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        filter: blur(0);
-      }
-    }
-
-    /* Estilo para la salida progresiva del Login */
-    body.cinematic-exit, .netflix-card.cinematic-exit {
-      opacity: 0 !important;
-      transform: scale(0.95) translateY(-10px) !important;
-      filter: blur(10px) !important;
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    }
-
-    /* 1. Navbar oscuro fijo */
-    nav.netflix-nav {
-      background-color: #000000 !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8) !important;
-      height: 64px !important;
-      line-height: 64px !important;
-    }
-
-    /* 2. Contenedor flexible principal */
-    .netflix-header-container {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      height: 100% !important;
-      width: 85% !important;
-      max-width: 1200px !important;
-      margin: 0 auto !important;
-    }
-
-    /* 3. Logo DAILYMOVIE */
-    .brand-logo-netflix {
-      font-family: 'Bebas Neue', cursive, sans-serif !important;
-      color: #E50914 !important;
-      font-size: 2.2rem !important;
-      letter-spacing: 1.5px !important;
-      text-decoration: none !important;
-      display: flex !important;
-      align-items: center !important;
-      height: 100% !important;
-    }
-
-    /* 4. Buscador estilizado */
-    .search-box-netflix {
-      display: flex !important;
-      align-items: center !important;
-      background: rgba(255, 255, 255, 0.1) !important;
-      border-radius: 20px !important;
-      padding: 0 14px !important;
-      height: 36px !important;
-      width: 300px !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      transition: all 0.3s ease !important;
-    }
-
-    .search-box-netflix:focus-within {
-      background: rgba(0, 0, 0, 0.85) !important;
-      border-color: #E50914 !important;
-      box-shadow: 0 0 10px rgba(229, 9, 20, 0.5) !important;
-      width: 360px !important;
-    }
-
-    .search-box-netflix i {
-      color: #aaaaaa !important;
-      font-size: 20px !important;
-      margin-right: 8px !important;
-      user-select: none !important;
-    }
-
-    .search-box-netflix input {
-      background: transparent !important;
-      border: none !important;
-      outline: none !important;
-      box-shadow: none !important;
-      color: #ffffff !important;
-      height: 100% !important;
-      width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      font-size: 0.9rem !important;
-    }
-
-    .search-box-netflix input::placeholder {
-      color: #888888 !important;
-    }
-
-    /* 5. Menú de navegación derecho */
-    .netflix-menu-links {
-      display: flex !important;
-      list-style: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      height: 100% !important;
-      align-items: center !important;
-    }
-
-    .netflix-menu-links li {
-      margin-left: 20px !important;
-    }
-
-    .netflix-menu-links li a {
-      color: #e5e5e5 !important;
-      font-weight: 500 !important;
-      font-size: 0.95rem !important;
-      text-decoration: none !important;
-      transition: color 0.3s ease !important;
-      padding: 0 5px !important;
-    }
-
-    .netflix-menu-links li a:hover {
-      color: #E50914 !important;
-      background: transparent !important;
-    }
-
-    .errorlist {
-      color: #F44336 !important;
-    }
-    /* --- Ajuste del botón y su efecto --- */
-/* --- Botón Cerrar Sesión Compacto y con Efecto --- */
-.btn-netflix-logout {
-    background-color: #E50914 !important;
-    color: #ffffff !important;
-    padding: 6px 14px !important;
-    border-radius: 4px !important;
-    font-weight: bold !important;
-    font-size: 12px !important;
-    line-height: normal !important;
-    text-transform: uppercase !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    height: auto !important;
-    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease !important;
-}
-
-.btn-netflix-logout:hover {
-    background-color: #f6121d !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4) !important;
-}
-/* --- Centrar contenedor principal y tarjetas --- */
-        .container.section, .container {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: center !important;
-            width: 100% !important;
-        }
-
-        .container.section > div, .card {
-            margin-left: auto !important;
-            margin-right: auto !important;
-        }
-  </style>
+        /* Dropdowns */
+        .dropdown-container { position: relative; display: inline-block; }
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 50px; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); z-index: 100; padding: 10px 0; max-height: 350px; overflow-y: auto; }
+        .dropdown-menu.show { display: block; }
+        .dropdown-header { padding: 10px 15px; font-size: 13px; font-weight: bold; color: #fff; border-bottom: 1px solid #333; }
+        .dropdown-section-title { padding: 8px 15px 4px 15px; font-size: 11px; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 0.5px; }
+        .dropdown-item { padding: 10px 15px; display: flex; flex-direction: column; color: #ccc; text-decoration: none; font-size: 13px; transition: background 0.2s; border-bottom: 1px solid #222; }
+        .dropdown-item:hover { background: #252525; color: #fff; }
+        .dropdown-empty { padding: 8px 15px; color: #666; font-size: 12px; font-style: italic; margin: 0; }
+        
+        .logout-item { color: #e50914 !important; font-weight: bold; }
+        .logout-item:hover { background: rgba(229, 9, 20, 0.1) !important; }
+    </style>
 </head>
 <body>
 
-<!-- Barra de Navegación Fija -->
-<!-- Barra de Navegación Fija -->
-<nav class="netflix-nav">
-    <div class="netflix-header-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 20px; position: relative;">
+    <!-- Barra Superior Global -->
+    <header class="global-header">
+        <div class="global-header-left"></div>
         
-        <!-- Elemento invisible izquierdo que equilibra el espacio (ancho 140px) -->
-        <div style="width: 140px; visibility: hidden;">Cerrar Sesión</div>
+        <a href="{% url 'movies:panel-cliente' %}" class="global-logo">Twolife</a>
+        
+        <div class="global-actions">
+            {% if request.user.is_authenticated %}
+                <!-- Campanita de Notificaciones -->
+                <div class="dropdown-container">
+                    <button onclick="toggleDropdown('notif-dropdown')" class="icon-btn" title="Notificaciones" type="button">
+                        🔔
+                        {% if notif_count > 0 %}
+                            <span class="badge" id="notif-badge">{{ notif_count }}</span>
+                        {% endif %}
+                    </button>
+                    <div id="notif-dropdown" class="dropdown-menu">
+                        <div class="dropdown-header">Notificaciones de Actividad</div>
+                        
+                        <div class="dropdown-section-title">📦 Tus Ventas</div>
+                        {% for venta in mis_ventas_notif %}
+                            <a href="{% url 'movies:seguimiento-compra' venta.pk %}" class="dropdown-item">
+                                <span>Venta de <b>{{ venta.producto.titulo }}</b></span>
+                                <small style="color: #888; margin-top: 2px;">{{ venta.estado_envio }}</small>
+                            </a>
+                        {% empty %}
+                            <p class="dropdown-empty">No hay ventas registradas.</p>
+                        {% endfor %}
 
-        <!-- Título Estrictamente al Centro -->
-        <div style="position: absolute; left: 50%; transform: translateX(-50%); text-align: center;">
-            <a href="javascript:window.location.reload();" class="brand-logo-netflix" style="margin: 0; display: inline-block; cursor: pointer;">LOGISTICA INVERSA</a>
+                        <div class="dropdown-section-title">🛒 Tus Compras</div>
+                        {% for compra in mis_compras_notif %}
+                            <a href="{% url 'movies:seguimiento-compra' compra.pk %}" class="dropdown-item">
+                                <span>Compra de <b>{{ compra.producto.titulo }}</b></span>
+                                <small style="color: #888; margin-top: 2px;">{{ compra.estado_envio }}</small>
+                            </a>
+                        {% empty %}
+                            <p class="dropdown-empty">No hay compras registradas.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Círculo de Perfil con la Inicial del Usuario -->
+                <div class="dropdown-container">
+                    <button onclick="toggleDropdown('profile-dropdown')" class="avatar-btn" title="Perfil y Ajustes" type="button">
+                        {{ request.user.username|slice:":1" }}
+                    </button>
+                    <div id="profile-dropdown" class="dropdown-menu" style="right: 0; left: auto;">
+                        <div class="dropdown-header">Hola, {{ request.user.username }}</div>
+                        <a href="{% url 'movies:panel-administrador' %}" class="dropdown-item">Panel General / Rol</a>
+                        <a href="{% url 'movies:log-out' %}" class="dropdown-item logout-item">Cerrar Sesión</a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
+    </header>
 
-        <!-- Botón de Cerrar Sesión a la Derecha (ancho 140px) -->
-        <div style="display: flex; justify-content: flex-end; align-items: center; width: 140px;">
-            <a href="{% url 'movies:log-out' %}" class="btn-netflix-logout">
-                Cerrar Sesión
-            </a>
-        </div>
+    <!-- Contenido dinámico de las vistas -->
+    <main>
+        {% block main-content %}{% endblock %}
+    </main>
 
-    </div>
-</nav>
-  <!-- Contenido Dinámico de Django -->
-  <div class="container section">
-    {% block main-content %}
-    {% endblock %}
-  </div>
+    <script>
+        // Al cargar la página, verificamos si el usuario ya abrió las notificaciones previamente en esta sesión
+        document.addEventListener("DOMContentLoaded", function() {
+            const currentCount = "{{ notif_count }}";
+            const lastReadCount = localStorage.getItem('twolife_last_notif_count');
+            
+            // Si el backend sigue mandando el mismo número que el usuario ya leyó, lo ocultamos visualmente
+            if (lastReadCount === currentCount) {
+                const badge = document.getElementById('notif-badge');
+                if (badge) badge.style.display = 'none';
+            }
+        });
 
-  <!-- Materialize JavaScript -->
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.css"></script>
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id);
+            
+            // Si abre el menú de notificaciones, guardamos el estado actual como leído
+            if (id === 'notif-dropdown') {
+                const badge = document.getElementById('notif-badge');
+                if (badge) {
+                    badge.style.display = 'none';
+                    localStorage.setItem('twolife_last_notif_count', "{{ notif_count }}");
+                }
+            }
+
+            // Cierra los demás menús desplegables abiertos (corregido 'removese' por 'remove')
+            document.querySelectorAll('.dropdown-menu').forEach(m => {
+                if(m.id !== id) m.classList.remove('show');
+            });
+            
+            menu.classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.dropdown-container')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+            }
+        }
+    </script>
 </body>
 </html>

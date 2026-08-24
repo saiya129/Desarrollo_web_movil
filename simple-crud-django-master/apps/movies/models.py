@@ -1,67 +1,106 @@
-from django.db import models
 from django.contrib.auth.models import User
-
-# --- Modelos Existentes del Proyecto ---
-class Categories(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-class Movies(models.Model):
-    title = models.CharField(max_length=200)
-    category = models.ForeignKey(Categories, on_delete=models.CASCADE)
-    # Agrega esta línea para asociar la película al usuario:
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Usuario')
-
-    def __str__(self):
-        return self.title
+from django.db import models
+from django.utils import timezone
 
 
-# --- Nuevo Modelo de Perfiles y Roles ---
-class UserProfile(models.Model):
-    POSTVENTA = 'postventa'
-    EJECUTIVO_LOGISTICA = 'ejecutivo_logistica'
-    OPERADOR_LOGISTICA = 'operador_logistica'
-    ADMINISTRADOR = 'administrador'
+class ProductoInversoManager(models.Manager):
 
-    ROLE_CHOICES = [
-        (POSTVENTA, 'Ejecutivo Postventa'),
-        (EJECUTIVO_LOGISTICA, 'Ejecutivo de Logística'),
-        (OPERADOR_LOGISTICA, 'Operador de Logística'),
-        (ADMINISTRADOR, 'Administrador'),
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
+
+class ProductoInverso(models.Model):
+    # Opciones de categorías para mantener consistencia
+    CATEGORIA_CHOICES = [
+        ('ropa', 'Ropa'),
+        ('electrodomesticos', 'Electrodomésticos'),
+        ('tecnologia', 'Tecnología'),
     ]
 
-    user = models.OneToOneField(
-        User, 
-        on_delete=models.CASCADE, 
-        related_name='profile',
-        verbose_name='Usuario'
+    # Relaciones y datos básicos
+    empresa = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='productos_inversos'
     )
-    role = models.CharField(
-        max_length=30, 
-        choices=ROLE_CHOICES, 
-        default=POSTVENTA,
-        verbose_name='Rol en la Plataforma'
+    titulo = models.CharField(max_length=200)
+    descripcion = models.TextField()
+    codigo_ean = models.CharField(max_length=13)
+    volumen_lote = models.PositiveIntegerField(default=1)
+    
+    # Campo de categoría sin default forzado para que el usuario elija
+    categoria = models.CharField(
+        max_length=50, choices=CATEGORIA_CHOICES
+    )
+
+    # Atributos comerciales y logísticos
+    marca = models.CharField(max_length=100, blank=True, null=True)
+    tienda_origen = models.CharField(max_length=100, blank=True, null=True)
+    ubicacion = models.CharField(max_length=150, blank=True, null=True)
+    precio_original = models.DecimalField(max_digits=10, decimal_places=2)
+    precio_rescate = models.DecimalField(max_digits=10, decimal_places=2)
+    estado_fisico = models.CharField(max_length=100)
+
+    # Control de borrado lógico
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(blank=True, null=True)
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+
+    # Managers
+    objects = models.Manager()  # Manager por defecto
+    activos = ProductoInversoManager()  # Manager para solo activos
+
+    def __str__(self):
+        return f'{self.titulo} - {self.empresa.username}'
+
+
+class ImagenProducto(models.Model):
+    producto = models.ForeignKey(
+        ProductoInverso, related_name='imagenes', on_delete=models.CASCADE
+    )
+    imagen = models.ImageField(upload_to='productos_inversos/')
+    es_principal = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Imagen para {self.producto.titulo} (Principal: {self.es_principal})'
+
+
+class PerfilUsuario(models.Model):
+    TIPO_CHOICES = (
+        ('cliente', 'Cliente / Comprador B2B'),
+        ('empresa', 'Empresa / Proveedor'),
+    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    tipo = models.CharField(
+        max_length=20, choices=TIPO_CHOICES, default='cliente'
     )
 
     def __str__(self):
-        return f"{self.user.username} - {self.get_role_display()}"
+        return f'{self.user.username} - {self.tipo}'
 
-    # --- Modelo para Solicitudes de Devolución del Cliente ---
-class SolicitudDevolucion(models.Model):
-    ESTADOS = [
-        ('Pendiente', 'Pendiente'),
-        ('Aprobada', 'Aprobada'),
-        ('Rechazada', 'Rechazada'),
-    ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Cliente')
-    producto = models.CharField(max_length=200, verbose_name='Nombre o Código del Producto')
-    motivo = models.TextField(verbose_name='Motivo de la devolución')
-    evidencia = models.ImageField(upload_to='evidencias/', verbose_name='Evidencia del producto')
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='Pendiente', verbose_name='Estado de la solicitud')
-    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Solicitud')
+class AgendamientoLogistica(models.Model):
+    producto = models.ForeignKey(ProductoInverso, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField(default=1)  # <--- Campo agregado para guardar las unidades adquiridas
+    repartidor_asignado = models.CharField(
+        max_length=150, default='Flota B2B Express'
+    )
+    cliente_empresa = models.CharField(max_length=150)
+    
+    # Modificado a DateTimeField para aceptar fecha y hora del formulario
+    fecha_recogida = models.DateTimeField()
+    
+    franja_horaria = models.CharField(max_length=100, blank=True, null=True)
+    estado_envio = models.CharField(
+        max_length=100, default='Agendado / Pendiente de retiro'
+    )
+    fecha_agendamiento = models.DateTimeField(default=timezone.now)
+    
+    tipo_entrega = models.CharField(max_length=50, default='retiro')
+    tipo_pago = models.CharField(max_length=50, default='debito')
+    costo_envio = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_pagado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    nombre_receptor = models.CharField(max_length=150, blank=True, null=True)
+    direccion_receptor = models.CharField(max_length=250, blank=True, null=True)
+    telefono_receptor = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
-        return f"Solicitud de {self.usuario.username} - {self.producto}"
+        return f'Retiro para {self.producto.titulo} ({self.cantidad} un.) - {self.estado_envio}'

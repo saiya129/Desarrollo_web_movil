@@ -1,140 +1,137 @@
 {% extends 'movies/fragments/base.html' %}
 
 {% block main-content %}
-<!-- Tipografía estilo Netflix desde Google Fonts -->
+<!-- Tipografía estilo Netflix -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 
 <style>
-  /* 1. Ocultar la barra de navegación en la pantalla de login */
-  nav, .netflix-nav {
-    display: none !important;
-  }
+    /* Ocultar la barra de navegación exclusivamente en el login */
+    nav, .netflix-nav {
+        display: none !important;
+    }
 
-  /* 2. Fondo estilo Netflix */
-  body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 60%, rgba(0, 0, 0, 0.85) 100%),
-                url('https://assets.nflxext.com/ffe/siteui/vlv3/ab73938e-d2f0-4558-be3a-9111f4803732/web/CL-es-20240715-POP-mhs-perspective_alpha_website_large.jpg') no-repeat center center fixed !important;
-    background-size: cover !important;
-  }
+    /* Fondo estilo Netflix */
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 60%, rgba(0, 0, 0, 0.85) 100%),
+                    url('https://assets.nflxext.com/ffe/siteui/vlv3/ab73938e-d2f0-4558-be3a-911f4803732/web/CL-es-20240715-POP-mhs-perspective_alpha_website_large.jpg');
+        background-size: cover !important;
+    }
 
-  /* 3. Contenedor centrado */
-  .netflix-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
+    /* Contenedor centrado específico para el login */
+    .netflix-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 20px;
+        width: 100%;
+    }
 
-  /* 4. Tarjeta flotante estilo Netflix */
-  .netflix-card {
-    background: rgba(0, 0, 0, 0.75) !important;
-    border-radius: 8px;
-    padding: 40px 50px !important;
-    width: 500px !important;     /* <--- Forzamos un ancho fijo exacto */
-    max-width: 90vw !important;  /* <--- Evita que se desborde en pantallas chicas */
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(4px);
-    will-change: transform, opacity, filter;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
+    /* Tarjeta flotante estilo Netflix */
+    .netflix-card {
+        background: rgba(0, 0, 0, 0.75) !important;
+        border-radius: 8px;
+        padding: 40px 50px !important;
+        width: 400px !important;
+        max-width: 90vw !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    }
 
-  .netflix-card h2 {
-    color: #ffffff;
-    font-size: 2rem;
-    font-weight: 700;
-    margin-top: 0;
-    margin-bottom: 25px;
-  }
+    .netflix-card h2 {
+        color: #ffffff;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 25px;
+        text-align: center;
+    }
 
-  /* 5. Corrección definitiva para separar la etiqueta flotante y el input */
-  .netflix-card .input-field {
-    position: relative;
-    margin-top: 35px !important;
-    margin-bottom: 20px !important;
-  }
+    .input-field {
+        margin-bottom: 20px;
+    }
 
-  .netflix-card .input-field label {
-    position: absolute !important;
-    top: -25px !important;
-    left: 0 !important;
-    font-size: 0.9rem !important;
-    color: #b3b3b3 !important;
-    transform: none !important;
-  }
+    .input-field input {
+        width: 100%;
+        padding: 14px;
+        background: #333;
+        border: 1px solid #555;
+        color: white;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 1rem;
+    }
 
-  .netflix-card .input-field input {
-    background: transparent !important;
-    color: #ffffff !important;
-    border-bottom: 1px solid #808080 !important;
-  }
+    .input-field input:focus {
+        border-color: #e50914;
+        outline: none;
+        background: #454545;
+    }
 
-  .netflix-card .input-field input:focus {
-    border-bottom: 1px solid #e50914 !important;
-    box-shadow: none !important;
-  }
+    .btn-netflix {
+        background-color: #e50914;
+        border: none;
+        width: 100%;
+        padding: 14px;
+        color: white;
+        font-weight: bold;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+        font-size: 1rem;
+    }
 
-  /* 6. Regla de salida cinemática al enviar el formulario */
-  .cinematic-exit {
-    opacity: 0 !important;
-    transform: scale(0.92) translateY(-10px) !important;
-    filter: blur(12px) !important;
-  }
+    .btn-netflix:hover {
+        background-color: #f40612;
+    }
+
+    .alert-error {
+        background-color: #e50914;
+        color: white;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        text-align: center;
+    }
 </style>
 
 <div class="netflix-wrapper">
-  <div class="netflix-card">
-    <h2>Iniciar Sesión</h2>
+    <div class="netflix-card">
+        <h2>Iniciar Sesión</h2>
 
-    <!-- Mensajes de alerta de Django si existen -->
-    {% if message %}
-      <div class="card-panel red darken-2" style="border-radius: 4px; padding: 10px;">
-        <span class="white-text">{{ message }}</span>
-      </div>
-    {% endif %}
+        {% if error %}
+            <div id="error-box" class="alert-error">
+                {{ error }}
+            </div>
+        {% endif %}
 
-    <!-- Formulario de Login -->
-    {% include 'movies/fragments/forms.html' %}
-  </div>
+        <form method="POST" id="login-form">
+            {% csrf_token %}
+            
+            <div class="input-field">
+                <input type="text" name="username" id="username" required autocomplete="username" placeholder="Usuario o correo electrónico">
+            </div>
+
+            <div class="input-field">
+                <input type="password" name="password" id="password" required autocomplete="current-password" placeholder="Contraseña">
+            </div>
+
+            <button type="submit" class="btn-netflix">ENTRAR</button>
+        </form>
+    </div>
 </div>
 
-<!-- Script de captura y animación -->
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.querySelector('form');
-    const submitBtn = document.querySelector('button[type="submit"], input[type="submit"]');
-    const card = document.querySelector('.netflix-card');
-
-    function triggerTransitionAndSubmit(e) {
-      if (e) e.preventDefault();
-      
-      // Aplicamos el desenfoque cinemático a la tarjeta
-      if (card) {
-        card.classList.add('cinematic-exit');
-      }
-
-      // Damos 350ms para apreciar la animación antes de enviar
-      setTimeout(function() {
-        if (loginForm) {
-          loginForm.submit();
-        } else if (submitBtn && submitBtn.form) {
-          submitBtn.form.submit();
+    window.addEventListener('DOMContentLoaded', (event) => {
+        if (performance.navigation.type === 1 || window.location.search === "") {
+            const errorBox = document.getElementById('error-box');
         }
-      }, 350);
-    }
-
-    if (loginForm) {
-      loginForm.addEventListener('submit', triggerTransitionAndSubmit);
-    } else if (submitBtn) {
-      submitBtn.addEventListener('click', triggerTransitionAndSubmit);
-    }
-  });
+    });
 </script>
 
 {% endblock %}
-

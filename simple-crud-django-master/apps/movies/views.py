@@ -1,60 +1,36 @@
-import csv
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-from django.http import Http404
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from .models import Movies, Categories,SolicitudDevolucion 
-from .forms import MoviesForm, LoginForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from .forms import ProductoInversoForm
+from .models import (
+    AgendamientoLogistica,
+    ImagenProducto,
+    PerfilUsuario,
+    ProductoInverso,
+)
 
 
-def role_based_redirect(user):
-    # Obtenemos el rol de forma segura desde el perfil
-    user_role = getattr(getattr(user, 'profile', None), 'role', None)
-
-    # Redirigimos según el rol registrado en la base de datos
-    if user.is_superuser or user.is_staff or user_role == 'administrador':
-        return redirect('movies:panel-administrador')
-        
-    elif user_role == 'operador_logistica':
-        return redirect('movies:panel-operador-logistica')
-        
-    elif user_role == 'ejecutivo_logistica':
-        return redirect('movies:panel-ejecutivo-logistica')
-        
-    elif user_role == 'postventa':
-        return redirect('movies:panel-postventa')
-        
-    else:
-        return redirect('movies:panel-cliente')
-    
 def log_in(request):
-    # Diccionario que almacena los datos que enviamos a la vista
-    form = LoginForm(
-        request.POST or None
-    )
-    context = {'message': None, 'form': form}
-    if request.POST and form.is_valid():
-        # Verificar credenciales
-        # Devuelve un objeto User si las credenciales son válidas.
-        # Si las credenciales no son válidas, devuelve None
-        user = authenticate(**form.cleaned_data)
+    if request.user.is_authenticated:
+        return redirect('movies:panel-cliente')
+
+    error = None  # Inicializamos la variable vacía
+
+    if request.method == 'POST':
+        usuario = request.POST.get('username')
+        clave = request.POST.get('password')
+        user = authenticate(request, username=usuario, password=clave)
+
         if user is not None:
-            # Verificar si el usuario esta activo
-            if user.is_active:
-                # Adjuntar usuario autenticado a la sesión actual
-                login(request, user)
-                # Redireccionar a una vista utilizando el nombre de la url
-                return role_based_redirect(user)
-            else:
-                context['message'] = 'El usuario ha sido desactivado'
+            login(request, user)
+            return redirect('movies:panel-cliente')
         else:
-            context['message'] = 'Usuario o contraseña incorrecta'
-    return render(request, 'movies/login.html', context)
+            error = 'Credenciales inválidas'
+
+    return render(request, 'movies/login.html', {'error': error})
 
 
-# decorador para restringir el acceso a solo usuarios autenticados
 @login_required
 def log_out(request):
     logout(request)
@@ -62,362 +38,320 @@ def log_out(request):
 
 
 @login_required
-def movie_list(request):
-    # CAMBIA ESTO: movies = Movies.objects.all()
-    # POR ESTO:
-    movies = Movies.objects.filter(user=request.user)
-    return render(request, 'movies/index.html', {'movies': movies})
-
-
-@login_required
-def movie_detail(request, pk):
-    try:
-        # recuperamos el objeto mediante la
-        # API de abstracción de base de datos
-        # que ofrece Django
-        m = Movies.objects.get(pk=pk)
-    except Movies.DoesNotExist:
-        raise Http404("Esta pelicuala no existe")
-
-    # version con shortcuts de django, equivalente al codigo anterior
-    # m = get_object_or_404(Movies, pk=pk)
-    return render(request, 'movies/detail.html', {'movie': m})
-
-
-@login_required
-def movie_create(request, **kwargs):
-    # Intanciamos la clase form
-    # si el diccionario request.POST no esta vacio
-    # la instancia se creara con dichos datos, sino estara vacia
-    form = MoviesForm(
-        request.POST or None,
-        request.FILES or None
+def dashboard_principal(request):
+    perfil, created = PerfilUsuario.objects.get_or_create(
+        user=request.user, defaults={'tipo': 'cliente'}
     )
-    # Comprobamos que la peticion es del motodo POST
-    # y que el formulario es valido
-    if request.POST and form.is_valid():
-        # Creamos el objeto sin guardarlo todavía en la base de datos
-        movie = form.save(commit=False)
-        # Le asignamos el usuario actual que inició sesión
-        movie.user = request.user
-        # Guardamos definitivamente el registro con su usuario asociado
-        movie.save()
-        # redirigir a una nueva URL
-        return redirect('movies:home')
-    return render(request, 'movies/form.html', {'form': form})
-
-
-@login_required
-def movie_update(request, **kwargs):
-    # recuperamos el objeto a actualizar
-    movie = Movies.objects.get(pk=kwargs.get('pk'))
-    # inicializamos el formulario con el objeto recuperado
-    form = MoviesForm(
-        request.POST or None,
-        instance=movie
-    )
-    if request.POST and form.is_valid():
-        form.save()
-        return redirect('movies:home')
-    return render(request, 'movies/form.html', {'form': form})
-
-
-@login_required
-def movie_delete(request, **kwargs):
-    # Solo el Administrador puede eliminar registros
-    if hasattr(request.user, 'profile') and request.user.profile.role != 'administrador':
-        return redirect('movies:home')
-
-    movie = Movies.objects.get(pk=kwargs.get('pk'))
-    movie.delete()
-    return redirect('movies:home')
-
-
-@login_required
-def category_list(request):
-    categories = Categories.objects.all()
-    return render(request, 'movies/category/category_list.html', {'categories': categories})
-
-# Vista exclusiva para Administrador (Generar reportes)
-@login_required
-def reportes_view(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    # Calculamos los indicadores reales desde la base de datos
-    total_solicitudes = SolicitudDevolucion.objects.count()
-    completadas = SolicitudDevolucion.objects.filter(estado__iexact='Completado').count()
-    pendientes = SolicitudDevolucion.objects.exclude(estado__iexact='Completado').count()
-
-    context = {
-        'total_solicitudes': total_solicitudes,
-        'completadas': completadas,
-        'pendientes': pendientes,
-    }
-    return render(request, 'movies/reportes.html', context)
-
-# --- PANEL DE POSTVENTA ---
-@login_required
-def panel_postventa(request):
-    # Verificamos que el usuario sea postventa o administrador
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'postventa' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    # Aquí puedes agregar la lógica para revisar solicitudes (ej: solicitudes = Solicitud.objects.all())
-    return render(request, 'movies/panel_postventa.html')
-
-
-# --- PANEL DE EJECUTIVO DE LOGÍSTICA ---
-@login_required
-def panel_ejecutivo_logistica(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'ejecutivo_logistica' and user_role != 'administrador':
-        return redirect('movies:home')
-        
-    return render(request, 'movies/panel_ejecutivo_logistica.html')
-
-# --- PANEL DE OPERADOR DE LOGÍSTICA ---
-@login_required
-def panel_operador_logistica(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'operador_logistica' and user_role != 'administrador':
-        return redirect('movies:home')
-        
-    return render(request, 'movies/panel_operador_logistica.html')
-
-# --- 1. SEGUIMIENTO DE LA OPERACIÓN LOGÍSTICA (Panel Principal) ---
-@login_required
-def panel_ejecutivo_logistica(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'ejecutivo_logistica' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    return render(request, 'movies/panel_ejecutivo_logistica.html')
-
-
-# --- 2. COORDINAR RETIROS ---
-@login_required
-def coordinar_retiros(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'ejecutivo_logistica' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    # Filtrar solo las solicitudes aprobadas para que logística pueda coordinar el retiro
-    solicitudes = SolicitudDevolucion.objects.filter(estado__iexact='aprobada').order_by('-fecha_creacion')
-    
-    return render(request, 'movies/coordinar_retiros.html', {'solicitudes': solicitudes})
-
-# --- 2. solicitud coordinacion---
-@login_required
-def coordinar_retiro_accion(request, solicitud_id):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'ejecutivo_logistica' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    solicitud = get_object_or_404(SolicitudDevolucion, id=solicitud_id)
-    
-    # Actualizamos el estado para que avance el flujo logístico
-    solicitud.estado = 'Retiro Coordinado'
-    solicitud.save()
-    
-    return redirect('movies:coordinar_retiros') # Reemplaza por el name de la url de esta vista si es distinto
-
-
-# --- 3. GENERAR ETIQUETAS DE NUEVO ENVÍO ---
-@login_required
-def generar_etiqueta(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'ejecutivo_logistica' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    # Filtrar las solicitudes con retiro coordinado para poder generarles etiqueta
-    solicitudes = SolicitudDevolucion.objects.filter(estado__iexact='Retiro Coordinado').order_by('-fecha_creacion')
-    
-    return render(request, 'movies/generar_etiqueta.html', {'solicitudes': solicitudes})
-
-# --- 3. GENERAR ETIQUETAS accion ---
-@login_required
-def generar_etiqueta_accion(request, solicitud_id):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'ejecutivo_logistica' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    solicitud = get_object_or_404(SolicitudDevolucion, id=solicitud_id)
-    
-    # Actualizamos el estado para que avance el flujo logístico
-    solicitud.estado = 'Etiqueta Generada'
-    solicitud.save()
-    
-    return redirect('movies:generar_etiqueta')
-
-
-# --- 1. REVISAR SOLICITUDES ---
-@login_required
-def revisar_solicitudes(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'postventa' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    solicitudes = SolicitudDevolucion.objects.all().order_by('-fecha_creacion')
-    return render(request, 'movies/revisar_solicitudes.html', {'solicitudes': solicitudes})
-
-
-# --- 2. VALIDAR EVIDENCIA ---
-@login_required
-def validar_evidencia(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'postventa' and user_role != 'administrador':
-        return redirect('movies:home')
-        
-    solicitudes = SolicitudDevolucion.objects.all().order_by('-fecha_creacion')
-    return render(request, 'movies/validar_evidencia.html', {'solicitudes': solicitudes})
-
-
-# --- 3. AUTORIZAR DEVOLUCIONES O CAMBIOS ---
-@login_required
-def autorizar_devoluciones(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'postventa' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    # Usar 'Pendiente' con la P mayúscula tal como se ve en tu interfaz
-    solicitudes = SolicitudDevolucion.objects.filter(estado='Pendiente').order_by('-fecha_creacion')
-    return render(request, 'movies/autorizar_devoluciones.html', {'solicitudes': solicitudes})
-# --- 3. Aprobar ------
-@login_required
-def aprobar_devolucion(request, pk):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'postventa' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    if request.method == 'POST':
-        solicitud = get_object_or_404(SolicitudDevolucion, pk=pk)
-        solicitud.estado = 'aprobada'  # O el nombre de tu campo de estado
-        solicitud.save()
-    return redirect('movies:autorizar_devoluciones')
-
-# --- 3. Rechazar---
-@login_required
-def rechazar_devolucion(request, pk):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'postventa' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    if request.method == 'POST':
-        solicitud = get_object_or_404(SolicitudDevolucion, pk=pk)
-        solicitud.estado = 'rechazada' # O el nombre de tu campo de estado
-        solicitud.save()
-    return redirect('movies:autorizar_devoluciones')
-
-
-# --- 1. EJECUTAR RETIROS Y ENVÍOS ---
-@login_required
-def ejecutar_retiros_envios(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'operador_logistica' and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    # Filtrar las solicitudes que tienen la etiqueta generada listas para la ejecución
-    solicitudes = SolicitudDevolucion.objects.filter(estado__iexact='Etiqueta Generada').order_by('-fecha_creacion')
-    
-    return render(request, 'movies/ejecutar_retiros_envios.html', {'solicitudes': solicitudes})
-
-# --- 1. EJECUTAR RETIROS Y ENVÍOS  accion---
-@login_required
-def ejecutar_retiros_envios_accion(request, solicitud_id):
-    # Si quieres evitar que te bote al home por temas de roles mientras pruebas:
-    # (puedes quitar la validación estricta de roles temporalmente)
-    
-    solicitud = get_object_or_404(SolicitudDevolucion, id=solicitud_id)
-    
-    # Actualizamos el estado al cierre definitivo del proceso
-    solicitud.estado = 'Completado'
-    solicitud.save()
-    
-    # Te devuelve exactamente a la lista de ejecución que querías
-    return redirect('movies:ejecutar_retiros_envios')
-
-# --- PANEL DE ADMINISTRADOR ---
-@login_required
-def panel_administrador(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    # Indicadores de Logística Inversa
-    total_solicitudes = SolicitudDevolucion.objects.count()
-    completadas = SolicitudDevolucion.objects.filter(estado__iexact='Completado').count()
-    pendientes = SolicitudDevolucion.objects.exclude(estado__iexact='Completado').count()
-
-    context = {
-        'total_solicitudes': total_solicitudes,
-        'completadas': completadas,
-        'pendientes': pendientes,
-    }
-    return render(request, 'movies/panel_administrador.html', context)
-
-@login_required
-def panel_base_datos(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'administrador':
-        return redirect('movies:home')
-    
-    # Obtenemos las solicitudes de devolución para visualizarlas en el panel
-    solicitudes = SolicitudDevolucion.objects.all().order_by('-fecha_creacion')
-    
-    context = {
-        'solicitudes': solicitudes,
-    }
-    return render(request, 'movies/panel_base_datos.html', context)
-
-@login_required
-def crear_solicitud(request):
-    """Permite al cliente iniciar una solicitud y adjuntar evidencia."""
-    if request.method == 'POST':
-        producto = request.POST.get('producto')
-        motivo = request.POST.get('motivo')
-        evidencia = request.FILES.get('evidencia')
-
-        SolicitudDevolucion.objects.create(
-            usuario=request.user,
-            producto=producto,
-            motivo=motivo,
-            evidencia=evidencia
+    if perfil.tipo == 'empresa':
+        productos = ProductoInverso.activos.filter(empresa=request.user).prefetch_related('imagenes')
+        return render(
+            request, 'movies/panel_administrador.html', {'productos': productos}
         )
-        return redirect('movies:panel-cliente')
+    else:
+        productos_rescate = ProductoInverso.activos.exclude(empresa=request.user).prefetch_related('imagenes')
+        return render(
+            request,
+            'movies/panel_cliente.html',
+            {'productos': productos_rescate},
+        )
 
-    return render(request, 'movies/crear_solicitud.html')
 
 @login_required
-def consultar_estado_solicitudes(request):
-    """Permite al cliente consultar el estado de sus solicitudes."""
-    solicitudes = SolicitudDevolucion.objects.filter(usuario=request.user).order_by('-fecha_creacion')
-    return render(request, 'movies/consultar_estado.html', {'solicitudes': solicitudes})
+def soft_delete_producto(request, pk):
+    producto = get_object_or_404(ProductoInverso, pk=pk)
+    producto.is_deleted = True
+    producto.deleted_at = timezone.now()
+    producto.save()
+    return redirect('movies:mis-productos')
+
+
+# --- Vistas para Pestañas, Marketplace y Agendamiento ---
+
 
 @login_required
 def panel_cliente(request):
-    """Panel principal exclusivo para clientes."""
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    # Si es personal interno por error cae aquí, los mandamos a su home o admin, 
-    # pero los clientes puros entran directo a su panel.
-    return render(request, 'movies/panel_cliente.html')
+    # Productos de otros usuarios (excluyendo los subidos por el usuario actual)
+    productos_rescate = ProductoInverso.activos.exclude(empresa=request.user).prefetch_related('imagenes')
+    
+    # Capturar parámetros de búsqueda y filtro por GET
+    query = request.GET.get('q', '').strip()
+    categoria = request.GET.get('categoria', '').strip()
+    
+    # Filtrar por texto de búsqueda si existe
+    if query:
+        productos_rescate = productos_rescate.filter(titulo__icontains=query)
+        
+    # Filtrar por categoría si existe y no está vacía
+    if categoria:
+        productos_rescate = productos_rescate.filter(categoria__iexact=categoria)
+        
+    # --- SISTEMA DE NOTIFICACIONES ---
+    # 1. Compras realizadas por ti
+    mis_compras_notif = AgendamientoLogistica.objects.filter(
+        cliente_empresa=request.user.username
+    )
+    
+    # 2. Ventas de productos que tú publicaste
+    mis_productos_ids = ProductoInverso.objects.filter(empresa=request.user).values_list('id', flat=True)
+    mis_ventas_notif = AgendamientoLogistica.objects.filter(
+        producto_id__in=mis_productos_ids
+    )
+    
+    total_notificaciones_count = mis_compras_notif.count() + mis_ventas_notif.count()
+
+    return render(
+        request,
+        'movies/panel_cliente.html',
+        {
+            'productos': productos_rescate,
+            'mis_compras_notif': mis_compras_notif,
+            'mis_ventas_notif': mis_ventas_notif,
+            'notif_count': total_notificaciones_count,
+            'request_get': request.GET,
+        },
+    )
+
+
+@login_required
+def mis_productos(request):
+    # Productos publicados por el usuario actual con borrado lógico aplicado y optimización de imágenes
+    productos = ProductoInverso.activos.filter(empresa=request.user).prefetch_related('imagenes')
+    return render(request, 'movies/mis_productos.html', {'productos': productos})
+
+
+@login_required
+def mis_compras(request):
+    # Compras o agendamientos logísticos realizados
+    compras = AgendamientoLogistica.objects.filter(
+        cliente_empresa=request.user.username
+    )
+    return render(request, 'movies/mis_compras.html', {'compras': compras})
+
+
+@login_required
+def seguimiento_compra(request, pk):
+    # Vista para consultar el detalle logístico de una compra específica
+    agendamiento = get_object_or_404(AgendamientoLogistica, pk=pk)
+    return render(request, 'movies/seguimiento_compra.html', {'agendamiento': agendamiento})
+
+
+@login_required
+def detalle_producto(request, pk):
+    producto = get_object_or_404(ProductoInverso, pk=pk)
+    return render(request, 'movies/detalle_producto.html', {'producto': producto})
+
+
+@login_required
+def editar_producto(request, pk):
+    # Asegura que solo el usuario dueño del producto pueda editarlo
+    producto = get_object_or_404(ProductoInverso, pk=pk, empresa=request.user)
+
+    if request.method == 'POST':
+        form = ProductoInversoForm(request.POST, request.FILES, instance=producto)
+        if form.is_valid():
+            prod = form.save()
+
+            # --- PROCESAR EL BORRADO DE IMÁGENES MARCADAS ---
+            ids_a_eliminar = request.POST.getlist('eliminar_imagenes')
+            if ids_a_eliminar:
+                ImagenProducto.objects.filter(id__in=ids_a_eliminar, producto=prod).delete()
+
+            # Procesar nuevas imágenes si el usuario decide adjuntar adicionales
+            files = request.FILES.getlist('imagenes')
+            if files:
+                for index, f in enumerate(files):
+                    ImagenProducto.objects.create(
+                        producto=prod, imagen=f, es_principal=False
+                    )
+
+            # Redirige de vuelta al detalle del producto
+            return redirect('movies:detalle-producto', pk=prod.pk)
+    else:
+        form = ProductoInversoForm(instance=producto)
+
+    return render(request, 'movies/editar_producto.html', {'form': form, 'producto': producto})
+
+
+@login_required
+def agendar_retiro_producto(request, pk):
+    producto = get_object_or_404(ProductoInverso, pk=pk)
+    
+    # Capturar la cantidad enviada por GET (desde el detalle) o POST (si ya está en el flujo)
+    cantidad_deseada = int(request.GET.get('cantidad', request.POST.get('cantidad', 1)))
+    
+    if request.method == 'POST':
+        # 1. Capturar los datos del formulario de compra/agendamiento
+        tipo_entrega = request.POST.get('tipo_entrega')  # 'retiro' o 'delivery'
+        fecha_agendada = request.POST.get('fecha_agendada')
+        tipo_pago = request.POST.get('tipo_pago')  # 'debito', 'credito', 'transferencia'
+        
+        # Datos opcionales si se seleccionó delivery
+        nombre_receptor = request.POST.get('nombre_receptor', '')
+        direccion_receptor = request.POST.get('direccion_receptor', '')
+        telefono_receptor = request.POST.get('telefono_receptor', '')
+        
+        # 2. Calcular costos y totales multiplicados por la cantidad seleccionada (Si es delivery se suman los 3.000 CLP)
+        costo_envio = 3000 if tipo_entrega == 'delivery' else 0
+        total_pagado = (float(producto.precio_rescate) * cantidad_deseada) + costo_envio
+        
+        # 3. Crear el registro en AgendamientoLogistica usando 'cantidad'
+        AgendamientoLogistica.objects.create(
+            producto=producto,
+            cliente_empresa=request.user.username,
+            cantidad=cantidad_deseada,  # <--- CORREGIDO: Ahora coincide exactamente con el modelo
+            repartidor_asignado='Flota B2B Express',
+            fecha_recogida=fecha_agendada,
+            tipo_entrega=tipo_entrega,
+            tipo_pago=tipo_pago,
+            costo_envio=costo_envio,
+            total_pagado=total_pagado,
+            nombre_receptor=nombre_receptor,
+            direccion_receptor=direccion_receptor,
+            telefono_receptor=telefono_receptor,
+            estado_envio='Vendido / Agendado'
+        )
+        
+        # 4. Gestionar el stock de forma parcial o total
+        if cantidad_deseada >= producto.volumen_lote:
+            producto.is_deleted = True
+            producto.deleted_at = timezone.now()
+            producto.volumen_lote = 0
+        else:
+            producto.volumen_lote -= cantidad_deseada
+            
+        producto.save()
+        
+        # 5. Redirigir a "Mis Compras"
+        return redirect('movies:mis-compras')
+
+    return render(request, 'movies/agendar_compra.html', {
+        'producto': producto,
+        'cantidad': cantidad_deseada
+    })
+
+
+# --- Placeholders y vistas conectadas a los paneles de logística/postventa ---
+@login_required
+def category_list(request):
+    return render(request, 'movies/category/category_list.html')
+
+
+@login_required
+def panel_postventa(request):
+    return render(request, 'movies/panel_postventa.html')
+
+
+@login_required
+def panel_ejecutivo_logistica(request):
+    return render(request, 'movies/panel_ejecutivo_logistica.html')
+
+
+@login_required
+def coordinar_retiros(request):
+    return render(request, 'movies/coordinar_retiros.html')
+
+
+@login_required
+def generar_etiqueta(request):
+    return render(request, 'movies/generar_etiqueta.html')
+
+
+@login_required
+def panel_operador_logistica(request):
+    return render(request, 'movies/panel_operador_logistica.html')
+
+
+@login_required
+def revisar_solicitudes(request):
+    return render(request, 'movies/revisar_solicitudes.html')
+
+
+@login_required
+def validar_evidencia(request):
+    return render(request, 'movies/validar_evidencia.html')
+
+
+@login_required
+def autorizar_devoluciones(request):
+    return render(request, 'movies/autorizar_devoluciones.html')
+
+
+@login_required
+def aprobar_devolucion(request, pk):
+    return redirect('movies:autorizar-devoluciones')
+
+
+@login_required
+def rechazar_devolucion(request, pk):
+    return redirect('movies:autorizar-devoluciones')
+
+
+@login_required
+def ejecutar_retiros_envios(request):
+    return render(request, 'movies/ejecutar_retiros_envios.html')
+
+
+@login_required
+def panel_administrador(request):
+    productos = ProductoInverso.activos.all().prefetch_related('imagenes')
+    return render(
+        request, 'movies/panel_administrador.html', {'productos': productos}
+    )
+
+
+@login_required
+def reportes_view(request):
+    return render(request, 'movies/reportes.html')
+
+
+@login_required
+def panel_base_datos(request):
+    return render(request, 'movies/panel_base_datos.html')
+
+
+@login_required
+def crear_solicitud(request):
+    if request.method == 'POST':
+        form = ProductoInversoForm(request.POST, request.FILES)
+        if form.is_valid():
+            prod = form.save(commit=False)
+            prod.empresa = request.user
+            prod.save()
+
+            # --- PROCESAR MÚLTIPLES IMÁGENES ---
+            files = request.FILES.getlist('imagenes')
+            for index, f in enumerate(files):
+                es_principal = index == 0  # La primera foto es la principal
+                ImagenProducto.objects.create(
+                    producto=prod, imagen=f, es_principal=es_principal
+                )
+
+            return redirect('movies:panel-cliente')
+    else:
+        form = ProductoInversoForm()
+    return render(request, 'movies/crear_solicitud.html', {'form': form})
+
+
+@login_required
+def consultar_estado_solicitudes(request):
+    return render(request, 'movies/consultar_estado_solicitudes.html')
+
+
+@login_required
+def coordinar_retiro_accion(request, solicitud_id):
+    return redirect('movies:coordinar-retiros')
+
+
+@login_required
+def generar_etiqueta_accion(request, solicitud_id):
+    return redirect('movies:generar-etiqueta')
+
+
+@login_required
+def ejecutar_retiros_envios_accion(request, solicitud_id):
+    return redirect('movies:ejecutar-retiros-envios')
+
 
 @login_required
 def descargar_reporte(request):
-    user_role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if not request.user.is_superuser and user_role != 'administrador':
-        return redirect('movies:home')
-
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="reporte_logistica_inversa.csv"'
-
-    writer = csv.writer(response)
-    writer.writerow(['ID', 'Producto', 'Motivo', 'Estado', 'Fecha de Creacion'])
-
-    solicitudes = SolicitudDevolucion.objects.all().order_by('-fecha_creacion')
-    for item in solicitudes:
-        writer.writerow([item.id, item.producto, item.motivo, item.estado, item.fecha_creacion])
-
-    return response
+    return redirect('movies:reportes')

@@ -1,0 +1,238 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div style="background: #141414; min-height: 90vh; padding: 30px; font-family: sans-serif; color: #fff;">
+    <div style="max-width: 1100px; margin: 0 auto;">
+        
+        <a href="{% url 'movies:detalle-producto' producto.pk %}" style="color: #2ecc71; text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px;">
+            ← Volver al detalle del producto
+        </a>
+
+        <h2 style="font-size: 28px; font-weight: 800; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px;">
+            Finalizar Adquisición y Logística
+        </h2>
+
+        <!-- FORMULARIO ENVOLVIENDO TODO CORRECTAMENTE -->
+        <form method="POST" id="form-compra" style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+            {% csrf_token %}
+            
+            <!-- CAMPO OCULTO PARA CONSERVAR LA CANTIDAD SELECCIONADA -->
+            <input type="hidden" name="cantidad" value="{{ cantidad }}">
+            
+            <!-- COLUMNA IZQUIERDA: Logística, Producto y Pago -->
+            <div style="display: flex; flex-direction: column; gap: 25px;">
+                
+                <!-- 1. Método Logístico -->
+                <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                    <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #e50914;">1. Selecciona el Método Logístico</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <label class="logistica-option" style="border: 2px solid #333; background: #151515; border-radius: 6px; padding: 15px; cursor: pointer; text-align: center; transition: all 0.2s;">
+                            <input type="radio" name="tipo_entrega" value="retiro" style="display: none;" checked>
+                            <div style="font-weight: bold; font-size: 15px; color: #fff;">Retiro en Bodega</div>
+                            <div style="font-size: 12px; color: #888; margin-top: 5px;">Disponible desde 24 hrs</div>
+                        </label>
+
+                        <label class="logistica-option" style="border: 2px solid #333; background: #151515; border-radius: 6px; padding: 15px; cursor: pointer; text-align: center; transition: all 0.2s;">
+                            <input type="radio" name="tipo_entrega" value="delivery" style="display: none;">
+                            <div style="font-weight: bold; font-size: 15px; color: #fff;">Delivery (+ $3.000)</div>
+                            <div style="font-size: 12px; color: #888; margin-top: 5px;">Mínimo 48 hrs hábiles</div>
+                        </label>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <label style="display: block; font-size: 13px; color: #aaa; margin-bottom: 5px;">Fecha y Hora Programada:</label>
+                        <input type="datetime-local" name="fecha_agendada" id="input-fecha" required style="background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; width: 100%; color-scheme: dark;">
+                    </div>
+
+                    <!-- Datos de Despacho (Condicional Delivery) -->
+                    <div id="seccion-delivery" style="display: none; margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
+                        <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #f39c12;">Datos de Despacho</h4>
+                        <div style="display: grid; gap: 10px;">
+                            <input type="text" name="nombre_receptor" placeholder="Nombre completo de quien recibe" style="background: #111; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; width: 100%;">
+                            <input type="text" name="direccion_receptor" placeholder="Dirección exacta de entrega" style="background: #111; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; width: 100%;">
+                            <input type="text" name="telefono_receptor" placeholder="Teléfono de contacto" style="background: #111; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; width: 100%;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Información del Producto y Dirección Exacta -->
+                <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; gap: 20px; align-items: center;">
+                    {% with primera_imagen=producto.imagenes.first %}
+                        {% if primera_imagen %}
+                            <img src="{{ primera_imagen.imagen.url }}" alt="{{ producto.titulo }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px;">
+                        {% else %}
+                            <div style="width: 100px; height: 100px; background: #222; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #666; border-radius: 6px;">Sin imagen</div>
+                        {% endif %}
+                    {% endwith %}
+                    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px;">
+                        <h3 style="font-size: 16px; font-weight: bold; margin: 0; color: #fff;">{{ producto.titulo }}</h3>
+                        <p style="color: #aaa; margin: 0;">Marca: <span style="color: #fff; font-weight: 500;">{{ producto.marca }}</span></p>
+                        <p style="color: #aaa; margin: 0;">Comuna: <span style="color: #fff; font-weight: 500;">{{ producto.ubicacion }}</span></p>
+                        <p style="color: #aaa; margin: 0;">Dirección del Lote: <span style="color: #f39c12; font-weight: bold;">{{ producto.direccion|default:"Bodega Central de Rescate" }}</span></p>
+                        <p style="color: #aaa; margin: 0;">Estado: <span style="color: #e50914; font-weight: bold;">{{ producto.estado_fisico }}</span></p>
+                        <p style="color: #aaa; margin: 0;">Cantidad a rescatar: <span style="color: #2ecc71; font-weight: bold;">{{ cantidad }} un.</span></p>
+                    </div>
+                </div>
+
+                <!-- 3. Método de Pago -->
+                <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                    <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #e50914;">3. Método de Pago</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <label class="pago-option" style="border: 2px solid #333; background: #151515; border-radius: 6px; padding: 12px; text-align: center; cursor: pointer; font-size: 13px; font-weight: bold; color: #fff;">
+                            <input type="radio" name="tipo_pago" value="debito" style="display: none;" checked> Débito
+                        </label>
+                        <label class="pago-option" style="border: 2px solid #333; background: #151515; border-radius: 6px; padding: 12px; text-align: center; cursor: pointer; font-size: 13px; font-weight: bold; color: #fff;">
+                            <input type="radio" name="tipo_pago" value="credito" style="display: none;"> Crédito
+                        </label>
+                        <label class="pago-option" style="border: 2px solid #333; background: #151515; border-radius: 6px; padding: 12px; text-align: center; cursor: pointer; font-size: 13px; font-weight: bold; color: #fff;">
+                            <input type="radio" name="tipo_pago" value="transferencia" style="display: none;"> Transferencia
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 4. Checkbox de Conformidad -->
+                <div style="background: rgba(229, 9, 20, 0.05); border: 1px dashed #e50914; border-radius: 8px; padding: 15px; display: flex; align-items: flex-start; gap: 12px;">
+                    <input type="checkbox" id="check-conformidad" onchange="validarBloqueo()" style="width: 18px; height: 18px; accent-color: #e50914; cursor: pointer; margin-top: 2px;">
+                    <label for="check-conformidad" style="font-size: 13px; color: #ddd; cursor: pointer; line-height: 1.4;">
+                        Confirmo que he leído las características del lote y <strong>acepto el producto en el estado físico actual</strong> indicado en la publicación.
+                    </label>
+                </div>
+
+            </div>
+
+            <!-- COLUMNA DERECHA: Resumen de Pago y Botón -->
+            <div>
+                <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 25px; position: sticky; top: 20px;">
+                    <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">Resumen de Pago</h3>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: #aaa;">
+                        <span>Valor Lote ({{ cantidad }} un.):</span>
+                        <span style="color: #fff;" id="txt-subtotal">$0</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; color: #aaa;">
+                        <span>Costo Logístico:</span>
+                        <span style="color: #fff;" id="txt-costo-envio">$0</span>
+                    </div>
+
+                    <div style="border-top: 1px solid #333; padding-top: 15px; display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 18px; font-weight: bold;">
+                        <span>Total Final:</span>
+                        <span style="color: #2ecc71;" id="txt-total">$0</span>
+                    </div>
+
+                    <button type="submit" id="btn-concretar" disabled style="width: 100%; background: #444; color: #888; border: none; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: not-allowed; transition: all 0.3s;">
+                        Concretar Adquisición
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Scripts de control visual, cantidades y validación -->
+<script>
+    const precioUnitario = parseFloat("{{ producto.precio_rescate }}".replace(',', '.'));
+    const cantidadSeleccionada = parseInt("{{ cantidad }}") || 1;
+    const subtotalBase = precioUnitario * cantidadSeleccionada;
+    let costoEnvioActual = 0;
+
+    // Inicializar textos estáticos del subtotal al cargar
+    document.getElementById('txt-subtotal').innerText = '$' + subtotalBase.toLocaleString('es-CL');
+
+    function actualizarEnvio(costoEnvio, horasMinimas) {
+        costoEnvioActual = costoEnvio;
+        
+        const totalFinal = subtotalBase + costoEnvio;
+        document.getElementById('txt-costo-envio').innerText = '$' + costoEnvio.toLocaleString('es-CL');
+        document.getElementById('txt-total').innerText = '$' + totalFinal.toLocaleString('es-CL');
+
+        const seccionDelivery = document.getElementById('seccion-delivery');
+        if (costoEnvio > 0) {
+            seccionDelivery.style.display = 'block';
+            seccionDelivery.querySelectorAll('input').forEach(i => i.required = true);
+        } else {
+            seccionDelivery.style.display = 'none';
+            seccionDelivery.querySelectorAll('input').forEach(i => i.required = false);
+        }
+
+        const inputFecha = document.getElementById('input-fecha');
+        inputFecha.disabled = false;
+        
+        const fechaMinima = new Date();
+        fechaMinima.setHours(fechaMinima.getHours() + horasMinimas);
+        inputFecha.min = fechaMinima.toISOString().slice(0, 16);
+        inputFecha.value = inputFecha.min;
+    }
+
+    function validarBloqueo() {
+        const check = document.getElementById('check-conformidad').checked;
+        const btn = document.getElementById('btn-concretar');
+        
+        if (check) {
+            btn.disabled = false;
+            btn.style.background = '#2ecc71';
+            btn.style.color = '#000';
+            btn.style.cursor = 'pointer';
+        } else {
+            btn.disabled = true;
+            btn.style.background = '#444';
+            btn.style.color = '#888';
+            btn.style.cursor = 'not-allowed';
+        }
+    }
+
+    document.querySelectorAll('.logistica-option').forEach(label => {
+        label.addEventListener('click', () => {
+            document.querySelectorAll('.logistica-option').forEach(l => {
+                l.style.borderColor = '#333';
+                l.style.background = '#151515';
+            });
+            label.style.borderColor = '#e50914';
+            label.style.background = '#222';
+            
+            const radio = label.querySelector('input');
+            radio.checked = true;
+            
+            if (radio.value === 'retiro') {
+                actualizarEnvio(0, 24);
+            } else {
+                actualizarEnvio(3000, 48);
+            }
+        });
+    });
+
+    document.querySelectorAll('.pago-option').forEach(label => {
+        label.addEventListener('click', () => {
+            document.querySelectorAll('.pago-option').forEach(l => {
+                l.style.borderColor = '#333';
+                l.style.background = '#151515';
+            });
+            label.style.borderColor = '#2ecc71';
+            label.style.background = '#222';
+            
+            label.querySelector('input').checked = true;
+        });
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const primerRadio = document.querySelector('input[name="tipo_entrega"][value="retiro"]');
+        if (primerRadio) {
+            primerRadio.checked = true;
+            const labelPadre = primerRadio.closest('.logistica-option');
+            labelPadre.style.borderColor = '#e50914';
+            labelPadre.style.background = '#222';
+            actualizarEnvio(0, 24);
+        }
+
+        const primerPago = document.querySelector('input[name="tipo_pago"][value="debito"]');
+        if (primerPago) {
+            primerPago.checked = true;
+            const labelPagoPadre = primerPago.closest('.pago-option');
+            labelPagoPadre.style.borderColor = '#2ecc71';
+            labelPagoPadre.style.background = '#222';
+        }
+    });
+</script>
+{% endblock %}

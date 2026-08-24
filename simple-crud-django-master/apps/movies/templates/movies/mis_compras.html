@@ -1,0 +1,87 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div style="background: #141414; min-height: 90vh; padding: 30px; font-family: sans-serif; color: #fff;">
+    
+    <!-- Barra de Pestañas Estilizada (Cápsula Unificada) -->
+    <div style="display: flex; justify-content: center; margin-bottom: 35px;">
+        <div style="display: inline-flex; background: #1a1a1a; padding: 6px; border-radius: 50px; border: 1px solid #333; gap: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+            
+            <a href="{% url 'movies:panel-cliente' %}" class="nav-tab {% if request.resolver_match.url_name == 'panel-cliente' %}active{% endif %}">
+                Productos (Marketplace)
+            </a>
+            
+            <a href="{% url 'movies:mis-productos' %}" class="nav-tab {% if request.resolver_match.url_name == 'mis-productos' %}active{% endif %}">
+                Mis Productos
+            </a>
+            
+            <a href="{% url 'movies:mis-compras' %}" class="nav-tab {% if request.resolver_match.url_name == 'mis-compras' %}active{% endif %}">
+                Mis Compras
+            </a>
+            
+            <a href="{% url 'movies:crear-solicitud' %}" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: #000; padding: 10px 20px; border-radius: 40px; font-weight: bold; font-size: 14px; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                + Publicar Lote
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Título de Sección -->
+    <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px;">Mis Compras Registradas</h2>
+
+    <!-- Grid de Compras -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+        {% for compra in compras %}
+            <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+                
+                <!-- Contenido de la Tarjeta de Compra -->
+                <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+                    <h3 style="font-size: 18px; margin: 0 0 10px 0; font-weight: bold; color: #fff;">{{ compra.producto.titulo }}</h3>
+                    <p style="color: #888; font-size: 13px; line-height: 1.4; margin-bottom: 15px; flex-grow: 1;">{{ compra.producto.descripcion|truncatechars:80 }}</p>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 13px; border-top: 1px solid #2a2a2a; padding-top: 12px;">
+                        <span style="color: #2ecc71; font-weight: bold; font-size: 16px;">Pagado: ${{ compra.total_pagado|default:compra.producto.precio_rescate }}</span>
+                    </div>
+
+                    <!-- Botón de Seguimiento Logístico -->
+                    <a href="{% url 'movies:seguimiento-compra' compra.pk %}" style="background: #e50914; color: #fff; text-align: center; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f6121d'" onmouseout="this.style.background='#e50914'">
+                        Ver Seguimiento 📦
+                    </a>
+                </div>
+
+            </div>
+        {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #777;">
+                <p style="font-size: 16px;">No tienes compras registradas todavía.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!-- Estilos CSS para las pestañas -->
+<style>
+    .nav-tab {
+        color: #888;
+        background: transparent;
+        padding: 10px 20px;
+        border-radius: 40px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .nav-tab:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab.active {
+        color: #000;
+        background: #2ecc71;
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'movies/fragments/base.html' %}
+
+{% block main-content %}
+<div style="background: #141414; min-height: 90vh; padding: 30px; font-family: sans-serif; color: #fff;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        
+        <a href="{% url 'movies:mis-compras' %}" style="color: #2ecc71; text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px;">
+            ← Volver a Mis Compras
+        </a>
+
+        <h2 style="font-size: 28px; font-weight: 800; margin-bottom: 10px;">
+            Seguimiento de Adquisición
+        </h2>
+        <p style="color: #aaa; margin-bottom: 30px;">Orden ID #{{ agendamiento.pk }} - Producto: <strong style="color: #fff;">{{ agendamiento.producto.titulo }}</strong></p>
+
+        <!-- Tarjeta de Estado Actual -->
+        <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 25px; margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <span style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Estado del Envío</span>
+                    <h3 style="font-size: 20px; color: #f39c12; margin: 5px 0 0 0;">{{ agendamiento.estado_envio }}</h3>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Logística</span>
+                    <p style="font-size: 15px; font-weight: bold; margin: 5px 0 0 0; text-transform: capitalize;">{{ agendamiento.tipo_entrega }}</p>
+                </div>
+            </div>
+
+            <!-- Detalles programados -->
+            <div style="border-top: 1px solid #333; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                <div>
+                    <p style="color: #888; margin: 0 0 5px 0;">Fecha Programada:</p>
+                    <p style="color: #fff; font-weight: bold; margin: 0;">{{ agendamiento.fecha_recogida|date:"d/m/Y H:i" }} hrs</p>
+                </div>
+                <div>
+                    <p style="color: #888; margin: 0 0 5px 0;">Repartidor / Flota:</p>
+                    <p style="color: #fff; font-weight: bold; margin: 0;">{{ agendamiento.repartidor_asignado }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalles de Pago y Receptor -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                <h4 style="font-size: 15px; font-weight: bold; color: #e50914; margin-bottom: 15px;">Información de Pago</h4>
+                <p style="color: #aaa; margin: 5px 0; font-size: 13px;">Método: <span style="color: #fff; text-transform: uppercase;">{{ agendamiento.tipo_pago }}</span></p>
+                <p style="color: #aaa; margin: 5px 0; font-size: 13px;">Costo Logístico: <span style="color: #fff;">${{ agendamiento.costo_envio }}</span></p>
+                <p style="color: #aaa; margin: 5px 0; font-size: 13px;">Total Cancelado: <span style="color: #2ecc71; font-weight: bold;">${{ agendamiento.total_pagado }}</span></p>
+            </div>
+
+            <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                <h4 style="font-size: 15px; font-weight: bold; color: #e50914; margin-bottom: 15px;">Datos de Destino / Receptor</h4>
+                {% if agendamiento.tipo_entrega == 'delivery' %}
+                    <p style="color: #aaa; margin: 5px 0; font-size: 13px;">Recibe: <span style="color: #fff;">{{ agendamiento.nombre_receptor }}</span></p>
+                    <p style="color: #aaa; margin: 5px 0; font-size: 13px;">Dirección: <span style="color: #fff;">{{ agendamiento.direccion_receptor }}</span></p>
+                    <p style="color: #aaa; margin: 5px 0; font-size: 13px;">Teléfono: <span style="color: #fff;">{{ agendamiento.telefono_receptor }}</span></p>
+                {% else %}
+                    <p style="color: #fff; font-size: 13px; font-style: italic;">Retiro presencial en bodega central o sucursal seleccionada.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
