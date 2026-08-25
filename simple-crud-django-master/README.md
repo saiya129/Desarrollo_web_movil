@@ -1,26 +1,21 @@
-# Sistema de Logística Inversa — Devoluciones y Cambios
+# Sistema de Logística Inversa
 
-Plataforma web desarrollada en Django para la gestión del proceso de logística
-inversa (devoluciones y cambios de productos) de un comercio electrónico.
-Proyecto base tomado de [simple-crud-django](https://github.com/) (CRUD con
-vistas basadas en funciones y autenticación) y adaptado al caso propuesto en
-la Sumativa 1 (APTC106): digitalización del flujo de devoluciones entre
-cliente, ejecutivo de postventa, ejecutivo de logística, operador de
-logística y administrador.
+Plataforma web desarrollada en Django para la publicación, adquisición y gestión logística de productos provenientes de procesos de logística inversa.
+
+Proyecto base tomado de [simple-crud-django](https://github.com/) (CRUD con vistas basadas en funciones y autenticación) y adaptado al caso de logística inversa desarrollado por el equipo en la Sumativa 2 (APTC106), incorporando funcionalidades de publicación de lotes, Marketplace, adquisición y gestión logística.
 
 ## Roles y flujo del proceso
 
-| Rol                    | Acciones principales                                                                                 |
-|------------------------|------------------------------------------------------------------------------------------------------|
-| Cliente                | Crea una solicitud de devolución/cambio adjuntando evidencia, consulta el estado de sus solicitudes. |
-| Ejecutivo Postventa    | Revisa solicitudes, valida evidencia, aprueba o rechaza.                                             |
-| Ejecutivo de Logística | Coordina el retiro y genera la etiqueta de reenvío de las solicitudes aprobadas.                     |
-| Operador de Logística  | Ejecuta el retiro/envío una vez generada la etiqueta, cerrando la solicitud como completada.         |
-| Administrador          | Accede a todos los paneles, visualiza indicadores (`reportes/`) y descarga el reporte en CSV.        |
+| Rol                         | Acciones principales                                                                 |
+|----------------------------|--------------------------------------------------------------------------------------|
+| Cliente / Comprador B2B    | Consulta productos disponibles, realiza adquisiciones y revisa sus compras y seguimiento. |
+| Empresa / Proveedor        | Publica y administra lotes de productos y revisa las operaciones asociadas a sus publicaciones. |
 
-El estado de una solicitud avanza así:
-`Pendiente → Aprobada → Retiro Coordinado → Etiqueta Generada → Completado`
-(o `Rechazada` si postventa la rechaza).
+El flujo principal de la aplicación considera:
+
+`Publicación de lote → Marketplace → Adquisición → Gestión logística → Seguimiento`
+
+La adquisición puede realizarse mediante retiro en bodega o mediante delivery, dependiendo de la opción seleccionada por el usuario.
 
 ## Requisitos
 
@@ -57,11 +52,8 @@ python manage.py runserver
 
 Luego abrir [http://127.0.0.1:8000/](http://127.0.0.1:8000/) e iniciar sesión.
 
-> **Nota:** el rol de cada usuario se define en el modelo `UserProfile`
-> (`postventa`, `ejecutivo_logistica`, `operador_logistica`, `administrador`).
-> Un usuario sin `UserProfile` asociado es tratado como **cliente**. Los
-> superusuarios (`is_superuser`) tienen acceso a todos los paneles sin
-> importar su rol.
+> **Nota:** > el tipo de usuario se define mediante el modelo `PerfilUsuario`.
+> Los tipos contemplados son **cliente** y **empresa**.
 
 ## Dependencias
 
@@ -76,20 +68,13 @@ Pillow==12.3.0
 
 ```
 apps/movies/
-├── models.py      # Movies/Categories (base original) + UserProfile y SolicitudDevolucion (dominio del proyecto)
-├── views.py        # Vistas por rol y flujo de estados de la solicitud
-├── forms.py
-├── urls.py
-└── templates/movies/  # Paneles por rol (panel_cliente, panel_postventa, panel_ejecutivo_logistica, etc.)
+├── migrations/ # Migraciones de la base de datos
+├── templates/ # Plantillas HTML del aplicativo
+├── admin.py # Configuración del panel de administración
+├── apps.py # Configuración de la aplicación
+├── forms.py # Formularios del aplicativo
+├── models.py # Modelos de productos, perfiles y agendamiento logístico
+├── tests.py # Pruebas de la aplicación
+├── urls.py # Rutas del aplicativo
+└── views.py # Vistas del Marketplace, productos, adquisiciones y logística
 ```
-
-## Limitaciones conocidas / trabajo futuro
-
-- Las vistas de transición de estado (`coordinar_retiro_accion`,
-  `generar_etiqueta_accion`, `ejecutar_retiros_envios_accion`) no validan
-  el estado previo de la solicitud, por lo que en la versión actual es
-  posible saltarse pasos del flujo.
-- No existe una operación de eliminación (Delete) para `SolicitudDevolucion`;
-  el rechazo cumple un rol equivalente dentro del flujo de negocio.
-- El MVP no incluye la aplicación móvil ni notificaciones en tiempo real
-  descritas en la propuesta original; ambas quedan como trabajo futuro.
