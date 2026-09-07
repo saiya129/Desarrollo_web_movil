@@ -334,7 +334,7 @@ def crear_solicitud(request):
 
 @login_required
 def consultar_estado_solicitudes(request):
-    return render(request, 'movies/consultar_estado_solicitudes.html')
+    return render(request, 'movies/consultar_estado.html')
 
 
 @login_required

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TWOLIFE — Sistema de Logística Inversa</title>
+<style>
+  :root{ --bg:#0e0e0e; --panel:#1a1a1a; --border:#2a2a2a; --text:#e8e8e8; --muted:#9a9a9a; --accent:#e11414; --green:#25c26a; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:900px;margin:0 auto;padding:2.5rem 1.2rem 4rem}
+  header{text-align:center;margin-bottom:2.5rem}
+  h1{color:var(--accent);letter-spacing:2px;margin:.2rem 0}
+  h2{margin:2.6rem 0 .8rem;border-bottom:2px solid var(--border);padding-bottom:.35rem}
+  .muted{color:var(--muted)}
+  a{color:#4a9eff}
+  .btns{margin:1.2rem 0}
+  .btn{display:inline-block;background:var(--accent);color:#fff;padding:.6rem 1.1rem;border-radius:7px;text-decoration:none;margin:.3rem .4rem .3rem 0;font-weight:600}
+  .btn.alt{background:var(--panel);border:1px solid var(--border);color:var(--text)}
+  table{border-collapse:collapse;width:100%;margin:1rem 0}
+  th,td{border:1px solid var(--border);padding:.55rem .75rem;text-align:left;vertical-align:top}
+  th{background:var(--panel)}
+  code,pre{background:#111;border:1px solid var(--border);border-radius:6px}
+  code{padding:.12rem .4rem;font-size:.9em}
+  pre{padding:1rem;overflow-x:auto}
+  .flow{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem;font-weight:600;color:var(--green)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+  figure{margin:0;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  figure img{display:block;width:100%}
+  figcaption{padding:.5rem .7rem;color:var(--muted);font-size:.9em}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+  footer{margin-top:3rem;border-top:1px solid var(--border);padding-top:1rem;color:var(--muted);font-size:.9em}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>TWOLIFE</h1>
+  <p class="muted">Sistema de Logística Inversa · APTC106 — Taller de Desarrollo Web y Móvil</p>
+  <p class="muted">Sumativa 4 — Propuesta de Solución · Joaquín Olivares · Javiera Chávez · Claudio Yáñez</p>
+  <div class="btns">
+    <a class="btn" href="https://github.com/XetuRiot/aptc106-logistica-inversa">Repositorio</a>
+    <a class="btn alt" href="https://github.com/XetuRiot/aptc106-logistica-inversa/blob/main/simple-crud-django-master/README.md">README / Instalación</a>
+  </div>
+</header>
+
+<h2>Descripción</h2>
+<p>Plataforma web para la <strong>publicación, adquisición y gestión logística</strong> de productos
+provenientes de procesos de logística inversa en el comercio electrónico: excedentes, devoluciones y
+stock de rescate que las empresas reincorporan al circuito comercial en lugar de descartarlos.</p>
+<p class="muted">Esta página es la vista de presentación del prototipo. El aplicativo funcional se ejecuta
+localmente siguiendo el README; la evidencia de funcionamiento se muestra en las capturas de abajo.</p>
+
+<h2>Roles y flujo</h2>
+<table>
+  <tr><th>Rol</th><th>Acciones principales</th></tr>
+  <tr><td>Cliente / Comprador B2B</td><td>Explora el Marketplace, filtra por categoría, adquiere lotes (retiro o delivery), paga y hace seguimiento de sus compras.</td></tr>
+  <tr><td>Empresa / Proveedor</td><td>Publica y administra lotes de rescate, gestiona imágenes y stock, aplica borrado lógico.</td></tr>
+  <tr><td>Ejecutivo / Operador de Logística</td><td>Coordina retiros, genera etiquetas de despacho (código EAN) y ejecuta envíos.</td></tr>
+  <tr><td>Ejecutivo de Postventa</td><td>Revisa solicitudes, valida evidencia fotográfica y autoriza devoluciones.</td></tr>
+  <tr><td>Administrador</td><td>Accede a todos los paneles, indicadores del sistema y descarga de reportes.</td></tr>
+</table>
+<p class="flow">Publicación de lote → Marketplace → Adquisición → Gestión logística → Seguimiento</p>
+
+<h2>Capturas del prototipo</h2>
+<div class="grid">
+  <figure><img src="img/01-login.png" alt="Inicio de sesión"><figcaption>Inicio de sesión</figcaption></figure>
+  <figure><img src="img/02-marketplace.png" alt="Marketplace"><figcaption>Marketplace de productos de rescate</figcaption></figure>
+  <figure><img src="img/03-detalle-producto.png" alt="Detalle de producto"><figcaption>Detalle: galería, precio original vs. rescate, estado</figcaption></figure>
+  <figure><img src="img/04-agendar-compra.png" alt="Adquisición"><figcaption>Adquisición: método logístico, fecha y pago</figcaption></figure>
+  <figure><img src="img/06-seguimiento-compra.png" alt="Seguimiento"><figcaption>Seguimiento de la adquisición</figcaption></figure>
+  <figure><img src="img/07-publicar-lote.png" alt="Publicar lote"><figcaption>Publicación de lote de rescate</figcaption></figure>
+  <figure><img src="img/08-mis-productos.png" alt="Mis lotes"><figcaption>Gestión de lotes publicados</figcaption></figure>
+  <figure><img src="img/10-panel-administrador.png" alt="Panel administrador"><figcaption>Panel de administrador</figcaption></figure>
+  <figure><img src="img/18-admin-productos.png" alt="Base de datos"><figcaption>Persistencia — registros en base de datos</figcaption></figure>
+</div>
+
+<h2>Cómo ejecutar localmente</h2>
+<pre>cd simple-crud-django-master
+python -m venv venv
+venv\Scripts\activate
+pip install -r requierements.txt
+python manage.py migrate
+python manage.py runserver</pre>
+<p>Abrir <code>http://127.0.0.1:8000/</code></p>
+
+<h2>Stack tecnológico</h2>
+<p>Django 6 · SQLite · django-unfold · django-widget-tweaks · Pillow · HTML / CSS / JavaScript</p>
+
+<footer>Universidad Andrés Bello — 2026 · Prototipo académico, sin fines comerciales.</footer>
+
+</div>
+</body>
+</html>
