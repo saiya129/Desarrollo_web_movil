@@ -1,5 +1,8 @@
 # Sistema de Logística Inversa
 
+**Página de presentación (GitHub Pages):** 
+https://saiya129.github.io/Desarrollo_web_movil/
+
 Plataforma web desarrollada en Django para la publicación, adquisición y gestión logística de productos provenientes de procesos de logística inversa.
 
 Proyecto base tomado de [simple-crud-django](https://github.com/) (CRUD con vistas basadas en funciones y autenticación) y adaptado al caso de logística inversa desarrollado por el equipo en la Sumativa 2 (APTC106), incorporando funcionalidades de publicación de lotes, Marketplace, adquisición y gestión logística.
